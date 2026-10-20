@@ -355,15 +355,21 @@ const flagMeshes=[];
 const asm=grp(-3.8,0.035,-9.6); box(4.6,0.02,3.2,0x2E7D4F,0,0,0,asm); box(4.2,0.025,2.8,0x3FA066,0,0.005,0,asm);
 board(1.2,0.5,["ASSEMBLY","AREA"],"#2E7D4F","#fff",0,0.03,0,asm).rotation.x=-Math.PI/2;
 (function projectBoard(){const g=grp(-4.2,0,-13.9);
-  [-2.2,2.2].forEach(x=>{cyl(0.08,0.08,4,0x9aa3ab,x,2,0,g);});
-  const t=tex("projBoard",(c,W,H)=>{c.fillStyle="#fff";c.fillRect(0,0,W,H);c.fillStyle="#13293D";c.fillRect(0,0,W,96);
-    c.fillStyle="#fff";c.font="bold 54px Arial";c.textAlign="left";c.fillText("TAQA",30,66);c.font="600 26px Arial";c.fillStyle="#7FC6EA";c.fillText("Water Solutions",190,64);
-    c.textAlign="right";c.fillStyle="#fff";c.font="600 24px Arial";c.fillText("Contract O-16124",W-30,62);
-    c.textAlign="left";c.fillStyle="#13293D";c.font="bold 34px Arial";c.fillText("Water network construction works",30,150);
-    c.font="24px Arial";c.fillStyle="#4A5563";
-    [["Client","TAQA Water Solutions"],["Consultant","Bilfinger"],["Contractor","Hydropower Energy & General Construction LLC"],["HSE Officer","Sabir Amin"],["Emergency","999  ·  Site first aid: site office"]].forEach(([k,v],i)=>{c.fillStyle="#B5520F";c.font="bold 22px Arial";c.fillText(k.toUpperCase(),30,196+i*40);c.fillStyle="#13293D";c.font="24px Arial";c.fillText(v,220,196+i*40);});
-    c.fillStyle="#2E7D4F";c.fillRect(30,H-118,W-60,88);c.fillStyle="#fff";c.font="bold 30px Arial";c.textAlign="center";c.fillText("SEE IT · REPORT IT · PREVENT IT",W/2,H-80);c.font="22px Arial";c.fillText("Report every near miss to your supervisor or HSE in the same shift",W/2,H-48);
-    c.fillStyle="#E8772E";c.fillRect(0,H-12,W,12);},1024,560);
+  [-2.2,2.2].forEach(x=>{cyl(0.08,0.08,4,0x9aa3ab,x,2,-0.14,g);});
+  const t=tex("projBoard2",(c,W,H)=>{c.fillStyle="#fff";c.fillRect(0,0,W,H);
+    // header: client, contractor, consultant
+    c.textAlign="left";c.fillStyle="#13293D";c.font="bold 56px Arial";c.fillText("TAQA",36,72);c.fillStyle="#2A8FC9";c.font="600 22px Arial";c.fillText("Water Solutions",40,102);
+    c.textAlign="center";c.fillStyle="#1F3A93";c.font="bold 28px Arial";c.fillText("HYDROPOWER ENERGY AND GENERAL",W/2+40,62);c.fillText("CONSTRUCTION S.P LLC",W/2+40,96);
+    c.fillStyle="#1F3A93";c.fillRect(W/2-290,42,44,58);c.fillStyle="#fff";c.font="bold 34px Arial";c.fillText("H",W/2-268,82);
+    c.textAlign="right";c.fillStyle="#0E7CC1";c.font="bold 30px Arial";c.fillText("BILFINGER",W-36,70);c.fillStyle="#13293D";c.font="600 20px Arial";c.fillText("Tebodin",W-36,98);
+    c.fillStyle="#13293D";c.fillRect(0,124,W,6);
+    // project title
+    c.textAlign="left";c.fillStyle="#13293D";c.font="bold 24px Arial";
+    c.fillText("CONSTRUCTION OF HOUSE CONNECTION AND ASSOCIATED WORKS (MISC.)",36,166);c.fillText("IN ABU DHABI AL DHAFRA REGION 2024 - PART-3",36,196);
+    [["Contract No","O-16124"],["Client","TAQA - Water Solutions"],["Consultant","Tebodin Middle East Ltd (Bilfinger)"],["Contractor","Hydropower Energy and General Construction S.P.LLC"],["Contact No","052 710 4892   ·   050 110 8454"],["HSE","058 899 8566   ·   058 899 8200"],["Emergency","Police 999   ·   Civil Defence 997   ·   Ambulance 998"]].forEach(([k,v],i)=>{const y=246+i*38;c.fillStyle="#B5520F";c.font="bold 22px Arial";c.fillText(k.toUpperCase(),36,y);c.fillStyle="#13293D";c.font="24px Arial";c.fillText(":  "+v,250,y);});
+    c.fillStyle="#13293D";c.fillRect(30,H-166,W-60,62);c.fillStyle="#fff";c.font="bold 25px Arial";c.textAlign="center";c.fillText("ALL VISITORS MUST REPORT TO SITE OFFICE FOR HSE INDUCTION TRAINING",W/2,H-125);
+    c.fillStyle="#2E7D4F";c.fillRect(30,H-96,W-60,66);c.fillStyle="#fff";c.font="bold 28px Arial";c.fillText("NEAR MISS?  SEE IT · REPORT IT · PREVENT IT",W/2,H-54);
+    c.fillStyle="#E8772E";c.fillRect(0,H-12,W,12);},1280,700);
   const m=new THREE.Mesh(new THREE.PlaneGeometry(4.6,2.5),new THREE.MeshStandardMaterial({map:t,roughness:.6}));m.position.set(0,2.55,0.06);g.add(m);box(4.7,2.6,0.1,0x13293D,0,2.55,0,g);})();
 
 // north-east corner: generator, bunded fuel tank, extinguisher
