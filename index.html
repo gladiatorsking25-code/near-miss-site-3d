@@ -1,0 +1,649 @@
+<title>Near Miss Site 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Public+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: one-screen app. The 3D site fills the stage; the scenario briefing sits beside it (below it on phones). One deliberate light look that matches the campaign deck. */
+:root{
+  --navy:#13293D; --navy-2:#1E3A55; --orange:#E8772E; --orange-ink:#B5520F;
+  --paper:#F6F4EF; --card:#FFFFFC; --line:#DDE3E8; --muted:#4A5563; --safe:#2E7D4F; --safe-bg:#E6F2EA; --risk-bg:#FCEEE4;
+  --display:"Oswald","Arial Narrow",Arial,sans-serif;
+  --body:"Public Sans",Arial,Helvetica,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--navy);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--navy);color:#fff}
+.brand{display:flex;flex-direction:column;gap:2px;min-width:0}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);font-weight:700}
+h1{font-family:var(--display);font-weight:600;font-size:22px;margin:0;letter-spacing:.01em}
+.score{font-size:13px;color:#cfd8e1;display:flex;align-items:center;gap:8px}
+.score b{color:#fff;font-variant-numeric:tabular-nums}
+.dots{display:flex;gap:4px}.dots i{width:9px;height:9px;border-radius:50%;background:#33506b}.dots i.on{background:var(--orange)}
+.mode{margin-left:auto;display:flex;background:var(--navy-2);border-radius:999px;padding:4px;gap:4px}
+.mode button{font:600 14px var(--body);border:0;border-radius:999px;padding:8px 16px;cursor:pointer;background:transparent;color:#cfd8e1}
+.mode button[aria-pressed="true"].haz{background:var(--orange);color:#fff}
+.mode button[aria-pressed="true"].fix{background:var(--safe);color:#fff}
+button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+main{flex:1;display:flex;min-height:0}
+#stage{position:relative;flex:1;min-width:0;min-height:0;background:#DCE6EE}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none}
+#pins{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.pin{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;width:34px;height:34px;border-radius:50%;border:3px solid #fff;background:var(--orange);color:#fff;font:700 15px var(--body);cursor:pointer;box-shadow:0 2px 6px rgba(19,41,61,.35);display:grid;place-items:center;transition:transform .15s}
+.pin.seen::after{content:"";position:absolute;right:-4px;top:-4px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 3px var(--navy)}
+.pin.fixed{background:var(--safe)}
+.pin.active{transform:translate(-50%,-50%) scale(1.22);border-color:var(--navy)}
+.stagebar{position:absolute;left:max(12px,env(safe-area-inset-left,0px));right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;pointer-events:none}
+.hint{background:rgba(19,41,61,.85);color:#fff;font-size:12px;padding:6px 10px;border-radius:6px}
+.reset{pointer-events:auto;font:600 12px var(--body);background:#fff;color:var(--navy);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+aside{width:400px;max-width:100%;background:var(--card);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.detail{padding:18px 20px 12px;overflow-y:auto;flex:1;min-height:0}
+.tagrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--orange-ink)}
+.pill{font-size:11px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:999px;color:#fff;background:var(--orange)}
+.pill.ok{background:var(--safe)}
+.pill.sev{background:#fff;color:#A3291C;box-shadow:inset 0 0 0 1px #E3B5AE}
+h2{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;margin:8px 0 12px;text-wrap:balance}
+.box{border-radius:8px;padding:12px 14px;margin:0 0 12px}
+.box.risk{background:var(--risk-bg)}
+.box.safe{background:var(--safe-bg)}
+.lbl{font-size:12px;font-weight:700;margin:0 0 4px;color:var(--orange-ink)}
+.safe .lbl{color:var(--safe)}
+.box p,.sec p{margin:0;font-size:14px;line-height:1.5;color:var(--navy)}
+.sec{margin:0 0 12px}
+.sec .lbl{color:var(--navy)}
+ul{margin:0;padding-left:18px;font-size:14px;line-height:1.5;color:var(--muted)}
+.safe ul{color:var(--navy)}
+li+li{margin-top:2px}
+.ask{border-left:0;background:var(--paper);border-radius:8px;padding:10px 14px;font-size:14px;line-height:1.5;color:var(--navy)}
+.ask b{display:block;font-size:12px;color:var(--orange-ink);margin-bottom:2px}
+.kv{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.6fr);gap:4px 10px;font-size:13px;line-height:1.45;margin:0 0 12px}
+.kv dt{font-weight:700;color:var(--navy)}.kv dd{margin:0;color:var(--muted)}
+.act{width:100%;border-collapse:collapse;font-size:13px;line-height:1.4;margin:2px 0 0}
+.act td{padding:5px 6px 5px 0;vertical-align:top;border-top:1px solid rgba(19,41,61,.1);color:var(--navy)}
+.act td.who{color:var(--muted);white-space:nowrap;font-size:12px}
+.act tr:first-child td{border-top:0}
+.g2{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0 0 12px;background:#fff}
+.g2 .lbl{color:var(--navy)}.g2 .sub{font-size:11px;color:var(--muted);margin:0 0 8px}
+.risk3{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 0}.risk3 span{font-size:12px;background:var(--paper);border-radius:6px;padding:3px 8px;color:var(--navy)}
+.who-card{display:flex;gap:10px;align-items:center;margin:0 0 12px;font-size:13px;color:var(--muted)}.who-card b{color:var(--navy)}
+.reset.go{background:var(--navy);color:#fff;border-color:var(--navy)}
+.intro p{font-size:14px;line-height:1.55;color:var(--muted);margin:0 0 10px}
+.intro ol{margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.6;color:var(--navy)}
+.legend{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:13px;color:var(--muted);align-items:center}
+.legend .d{width:14px;height:14px;border-radius:50%}
+.nav{display:flex;gap:8px;padding:10px 20px;border-top:1px solid var(--line)}
+.nav button{flex:1;font:600 14px var(--body);border-radius:8px;padding:9px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--navy)}
+.nav button.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 20px 12px}
+.chip{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:600 13px var(--body);border:1px solid var(--line);background:var(--paper);color:var(--navy);border-radius:8px;padding:7px 4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.chip .n{flex:none;width:20px;height:20px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;font-size:11px}
+.chip.fixed .n{background:var(--safe)}
+.chip.seen{background:#fff}
+.chip[aria-current="true"]{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+.foot{font-size:11px;color:var(--muted);padding:0 20px 12px}
+@media (max-width:820px){
+  main{flex-direction:column}
+  #stage{flex:none;height:48%}
+  aside{width:auto;border-left:0;border-top:1px solid var(--line);flex:1}
+  h1{font-size:19px}.eyebrow{display:none}
+  .mode{margin-left:0}
+  .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){.pin{transition:none}}
+</style>
+
+<header>
+  <div class="brand">
+    <span class="eyebrow">Near Miss Campaign 2026 · Spot it, report it, fix it</span>
+    <h1>Near Miss Site 3D</h1>
+  </div>
+  <div class="score" aria-live="polite"><span>Spotted <b id="seenN">0</b> of 8</span><span class="dots" id="dots"></span></div>
+  <div class="mode" role="group" aria-label="View">
+    <button id="btnHaz" class="haz" aria-pressed="true">Show near misses</button>
+    <button id="btnFix" class="fix" aria-pressed="false">Show fixes</button>
+  </div>
+</header>
+<main>
+  <div id="stage">
+    <div id="pins"></div>
+    <div class="stagebar"><span class="hint">Drag to rotate · scroll or pinch to zoom · right-drag to pan · tap a number</span><button class="reset" id="reset">Whole site</button><button class="reset" id="meet">HSE officer</button><button class="reset go" id="inspBtn">Inspection walk</button></div>
+  </div>
+  <aside>
+    <div class="detail" id="detail" aria-live="polite"></div>
+    <div class="nav"><button id="prev">Previous</button><button id="next" class="primary">Start tour</button></div>
+    <div class="chips" id="chips"></div>
+    <div class="foot">Hydropower Energy &amp; General Construction LLC · HSE Department. Illustrative scenarios for training.</div>
+  </aside>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const INSP=[{"n": 1, "ref": "16124-NM-SAMPLE-01", "time": "08:10", "title": "Open edge at the excavation", "category": "Work at height – fall into excavation", "location": "Benched excavation, north side (Zone A)", "observed": "A 3 m section of edge protection was missing at the benched excavation. A worker was standing at the open edge passing tools down by hand to the bench below.", "potential": "Fall of about 2 m into the excavation causing head or spinal injury.", "unsafe_acts": ["Improper position for task", "Violation / taking shortcuts"], "unsafe_conditions": ["Inadequate guards or barriers"], "root_personal": ["Behavior"], "root_system": ["Inadequate Leadership Supervision", "Inadequate Planned Inspections"], "immediate_actions": [["Work stopped and the worker moved back from the open edge.", "HSE Officer", "20/10/2026"], ["Missing guardrail and toe board section reinstated before work restarted.", "Site Supervisor", "20/10/2026"], ["Tools lowered using a rope and bucket; access limited to the stairway.", "Foreman", "20/10/2026"]], "root_causes": ["Edge protection removed for material access and not reinstated.", "Edge protection not checked at the start of the shift.", "No safe method provided for passing tools into the excavation."], "corrective_actions": [["Edge protection to be checked and signed off on the daily excavation inspection checklist.", "Site Engineer", "21/10/2026"], ["Any removal of edge protection to be authorised under the excavation permit, with a person posted at the opening until it is reinstated.", "Site Supervisor", "21/10/2026"], ["Toolbox talk on working near excavation edges and lowering tools and materials safely.", "HSE Officer", "22/10/2026"]], "procedure": ["Excavation permit to work, with edge protection (guardrail and toe board) as a permit condition.", "Daily excavation inspection by a competent person before each shift.", "Access and egress by stairway only; tools and materials lowered by rope or bucket.", "Report the near miss to the supervisor or HSE in the same shift; HSE records it on ADOSH-SF Form G2."], "risk": {"probability": "Rare", "severity": "Major", "level": "Moderate"}, "description": "On 20/10/2026 at 08:10, during a planned HSE site inspection of the benched excavation (Zone A), a section of edge protection was found removed and a worker was standing at the open edge passing tools down by hand. A slip or loss of balance could have resulted in a fall of about 2 m into the excavation. No injury occurred. Work was stopped and the area made safe immediately."}, {"n": 2, "ref": "16124-NM-SAMPLE-02", "time": "08:25", "title": "Worker inside the excavator's swing", "category": "People and plant – struck by moving plant", "location": "Excavation area beside the trench (Zone B)", "observed": "A worker was walking along the trench inside the swing radius of a working excavator. The operator was looking at the bucket and had not seen him. No exclusion zone or banksman was in place.", "potential": "Worker struck or crushed by the counterweight or bucket.", "unsafe_acts": ["Improper position for task", "Failure to warn", "Lack of awareness / knowledge"], "unsafe_conditions": ["Inadequate guards or barriers", "Inadequate warning system or notice"], "root_personal": ["Skill Level"], "root_system": ["Inadequate Risk Assessment / Management", "Inadequate Leadership Supervision"], "immediate_actions": [["Operator stopped the excavator and lowered the bucket; worker escorted out of the swing zone.", "HSE Officer", "20/10/2026"], ["Exclusion zone (swing radius plus 1 m) marked with cones and barrier tape.", "Site Supervisor", "20/10/2026"], ["Trained banksman posted in the operator's line of sight before work resumed.", "Foreman", "20/10/2026"]], "root_causes": ["No exclusion zone set up around the working excavator.", "No banksman assigned for excavation work near pedestrians.", "Pedestrian route ran past the digging area."], "corrective_actions": [["Exclusion zone and banksman added as permanent controls in the excavation method statement and risk assessment.", "Site Engineer", "22/10/2026"], ["Pedestrian route moved away from the digging area and signed.", "Site Supervisor", "21/10/2026"], ["Toolbox talk for operators and workers: never enter the swing zone without eye contact and a signal from the operator.", "HSE Officer", "21/10/2026"]], "procedure": ["Plant and pedestrian segregation as per the site traffic management plan.", "Exclusion zone of the swing radius plus 1 m around working excavators.", "Banksman required whenever people work near operating plant.", "Operator stops and grounds the bucket before anyone enters the zone."], "risk": {"probability": "Rare", "severity": "Catastrophic", "level": "Moderate"}, "description": "On 20/10/2026 at 08:25, during a planned HSE site inspection, a worker was observed walking inside the swing radius of an excavator while it was digging beside the trench (Zone B). The operator was not aware of him. No exclusion zone was marked and no banksman was present. No injury occurred. The HSE Officer signalled the operator to stop and the worker was escorted out of the zone."}, {"n": 3, "ref": "16124-NM-SAMPLE-03", "time": "08:40", "title": "Shoring strut missing in the trench", "category": "Excavation – trench collapse", "location": "Shored trench, east side (Zone C)", "observed": "One horizontal strut was missing from the trench shoring and spoil was heaped at the trench edge while a worker was inside the trench.", "potential": "Trench wall collapse burying or crushing the worker.", "unsafe_acts": ["Removing / Defeating Safety Devices", "Failure to secure", "Lack of awareness / knowledge"], "unsafe_conditions": ["Inadequate guards or barriers", "Poor housekeeping, disorder"], "root_personal": ["Skill Level"], "root_system": ["Inadequate Planned Inspections", "Inadequate Management of Change"], "immediate_actions": [["Worker removed from the trench and entry stopped.", "HSE Officer", "20/10/2026"], ["Missing strut refitted and shoring checked by the competent person.", "Site Engineer", "20/10/2026"], ["Spoil moved back from the trench edge; ladder placed within reach.", "Site Supervisor", "20/10/2026"]], "root_causes": ["Strut removed to pass a pipe through and not refitted.", "Trench not re-inspected after the change to the support system.", "Spoil placement not controlled."], "corrective_actions": [["Trench to be inspected and recorded by a competent person before each shift and after any change.", "Site Engineer", "21/10/2026"], ["Any change to shoring to be approved by the site engineer; no entry until it is reinstated.", "Site Engineer", "21/10/2026"], ["Spoil and material storage distance from the edge marked on site and briefed to the team.", "Site Supervisor", "22/10/2026"]], "procedure": ["Excavation permit to work, including the trench support design and method statement.", "Competent person inspection before each shift and after any change; entry only when signed off.", "Spoil and materials kept back from the edge as set in the method statement.", "Safe ladder access within reach of anyone working in the trench."], "risk": {"probability": "Rare", "severity": "Catastrophic", "level": "Moderate"}, "description": "On 20/10/2026 at 08:40, during a planned HSE site inspection of the shored trench (Zone C), one shoring strut was found missing and excavated spoil was heaped at the trench edge while a worker was in the trench. This increased the load on the trench wall and reduced the support. No collapse or injury occurred. The worker was asked to leave the trench immediately."}, {"n": 4, "ref": "16124-NM-SAMPLE-04", "time": "08:55", "title": "Worker under the crane's load", "category": "Lifting operations – struck by suspended load", "location": "Mobile crane lifting area (Zone D)", "observed": "A mobile crane was lifting a bundle of steel beams. A worker took a shortcut and walked under the suspended load. The lift zone was not barricaded and no tag line was used.", "potential": "Worker struck by the load, a slipping beam or a failed sling.", "unsafe_acts": ["Violation / taking shortcuts", "Improper position for task"], "unsafe_conditions": ["Inadequate guards or barriers", "Inadequate warning system or notice"], "root_personal": ["Behavior"], "root_system": ["Inadequate / Missing Work Procedures (SoP)", "Inadequate Communication"], "immediate_actions": [["Lift stopped by the signaller and the load landed safely.", "Lifting Supervisor", "20/10/2026"], ["Lift zone barricaded with cones and tape; lookout posted.", "Site Supervisor", "20/10/2026"], ["Tag lines fitted to control the load before the lift restarted.", "Rigger / Signaller", "20/10/2026"]], "root_causes": ["Lift zone not set up as required by the lift plan.", "Lift plan not briefed to workers near the lift.", "Worker chose a shortcut under the load."], "corrective_actions": [["Lift plan briefing to include all workers in the area, with sign-off before each lift.", "Lifting Supervisor", "21/10/2026"], ["Barricaded lift zone and tag lines added as mandatory checks on the lifting permit.", "Site Engineer", "21/10/2026"], ["Toolbox talk: never walk under a suspended load.", "HSE Officer", "21/10/2026"]], "procedure": ["Approved lift plan and lifting permit for every crane lift.", "Certified crane operator, rigger and signaller; lift zone barricaded with a lookout.", "Tag lines to control the load; no one under or near a suspended load.", "Pre-lift briefing for everyone working nearby."], "risk": {"probability": "Rare", "severity": "Catastrophic", "level": "Moderate"}, "description": "On 20/10/2026 at 08:55, during a planned HSE site inspection, a worker was observed walking under a suspended load of steel beams during a mobile crane lift (Zone D). The lift zone was not barricaded and the load had no tag line. No injury occurred. The lift was stopped and the load lowered in a safe position."}, {"n": 5, "ref": "16124-NM-SAMPLE-05", "time": "09:10", "title": "Truck reversing toward a pedestrian", "category": "Moving plant – reversing vehicle", "location": "Plant and vehicle area (Zone E)", "observed": "A dumper was reversing in the plant area toward a worker walking behind it. A colleague shouted and the worker stepped aside just in time. There was no pedestrian walkway and no banksman.", "potential": "Worker run over or crushed against parked plant.", "unsafe_acts": ["Failure to warn", "Improper position for task", "Lack of attention / concentration"], "unsafe_conditions": ["Congestion/ restricted action/ poor access", "Excessive noise exposure"], "root_personal": ["Human Error"], "root_system": ["Inadequate Engineering / Design / Controls", "Inadequate Risk Assessment / Management"], "immediate_actions": [["Vehicle movements in the plant area stopped.", "HSE Officer", "20/10/2026"], ["Barriered pedestrian walkway set up along the plant area.", "Site Supervisor", "20/10/2026"], ["Banksman assigned for all reversing moves; reversing alarm and camera checked.", "Plant Foreman", "20/10/2026"]], "root_causes": ["No segregation between pedestrians and plant in the plant area.", "Reversing moves made without a banksman.", "Reversing alarm hard to hear over site noise."], "corrective_actions": [["Traffic management plan updated with a permanent segregated walkway in the plant area.", "Site Engineer", "23/10/2026"], ["Banksman mandatory for all reversing; added to the daily plant pre-use checklist.", "Plant Foreman", "21/10/2026"], ["Toolbox talk: make eye contact with the driver before passing plant.", "HSE Officer", "21/10/2026"]], "procedure": ["Site traffic management plan with segregated pedestrian and plant routes.", "Banksman for every reversing movement.", "Daily pre-use check of reversing alarm, camera and mirrors.", "Pedestrians make eye contact with the driver before passing."], "risk": {"probability": "Rare", "severity": "Catastrophic", "level": "Moderate"}, "description": "On 20/10/2026 at 09:10, during a planned HSE site inspection of the plant area (Zone E), a dumper was observed reversing toward a worker walking behind it. A colleague shouted a warning and the worker stepped aside. No banksman was guiding the move and there was no separate pedestrian route. No injury occurred. Vehicle movements were stopped until controls were in place."}, {"n": 6, "ref": "16124-NM-SAMPLE-06", "time": "09:25", "title": "Crossing away from the zebra crossing", "category": "Site traffic – pedestrian struck by vehicle", "location": "Main site road, west section (Zone F)", "observed": "A worker crossed the site road between parked plant, away from the zebra crossing, as a pickup approached above the site speed limit.", "potential": "Worker hit by a vehicle.", "unsafe_acts": ["Violation / taking shortcuts", "Operating at improper speed"], "unsafe_conditions": ["Congestion/ restricted action/ poor access"], "root_personal": ["Behavior"], "root_system": ["Inadequate Engineering / Design / Controls", "Inadequate Communication"], "immediate_actions": [["Worker and driver stopped and briefed on the spot.", "HSE Officer", "20/10/2026"], ["Parked plant moved to clear sight lines at the crossing area.", "Site Supervisor", "20/10/2026"], ["Site speed limit of 15 km/h re-briefed to all drivers.", "Logistics Supervisor", "20/10/2026"]], "root_causes": ["Shortcut taken because the crossing was out of the direct route.", "Parked plant blocked the driver's view.", "Speed limit not enforced."], "corrective_actions": [["Additional zebra crossing marked on the west side of the site road.", "Site Engineer", "24/10/2026"], ["No-parking zone near crossings marked to keep sight lines clear.", "Site Supervisor", "22/10/2026"], ["Speed checks added to the weekly HSE inspection.", "HSE Officer", "27/10/2026"]], "procedure": ["Site traffic management plan: designated crossings and pedestrian priority.", "Site speed limit of 15 km/h, enforced through spot checks.", "No parking at or near crossings to keep sight lines clear."], "risk": {"probability": "Rare", "severity": "Major", "level": "Moderate"}, "description": "On 20/10/2026 at 09:25, during a planned HSE site inspection, a worker was observed crossing the main site road (Zone F) between parked plant, away from the marked zebra crossing, while a pickup approached. The pickup braked and stopped. No injury occurred. The worker and the driver were briefed on the spot."}, {"n": 7, "ref": "16124-NM-SAMPLE-07", "time": "09:40", "title": "Buried cable in the digging area", "category": "Underground services – cable strike", "location": "Cable trench beside the excavator (Zone B)", "observed": "The excavator was digging toward a live cable that was not on the drawings. The bucket stopped a hand's width from it. The area had not been scanned and the permit to dig was not checked.", "potential": "Electrocution, fire or a power outage to the area.", "unsafe_acts": ["Operating equipment without authority", "Lack of awareness / knowledge"], "unsafe_conditions": ["Inadequate warning system or notice"], "root_personal": ["Skill Level"], "root_system": ["Inadequate / Missing Work Procedures (SoP)", "Inadequate Risk Assessment / Management"], "immediate_actions": [["Excavation stopped and the bucket moved away from the cable.", "HSE Officer", "20/10/2026"], ["Exposed cable barricaded, covered, marked and signed as live.", "Site Supervisor", "20/10/2026"], ["Utility owner informed and area scanned before any further digging.", "Site Engineer", "20/10/2026"]], "root_causes": ["Permit to dig not checked before excavation started.", "Area not scanned for underground services.", "Drawings not verified against the site."], "corrective_actions": [["No excavation without a valid permit to dig, service drawings and a scan record.", "Site Engineer", "21/10/2026"], ["Hand-dug trial pits required near known or suspected services before machine digging.", "Site Supervisor", "21/10/2026"], ["Exposed services to be protected, supported and marked; utility owner notified.", "Site Engineer", "21/10/2026"]], "procedure": ["Permit to dig with up-to-date service drawings and a cable scan before work starts.", "Services marked on the ground; hand-dig trial pits near located services.", "Exposed cables treated as live: protected, supported, barricaded and signed.", "Stop work and inform the supervisor the moment anything unexpected appears in the dig."], "risk": {"probability": "Rare", "severity": "Catastrophic", "level": "Moderate"}, "description": "On 20/10/2026 at 09:40, during a planned HSE site inspection, mechanical excavation was found taking place close to a live underground cable that was not shown on the drawings (Zone B). The bucket stopped about 10 cm from the cable. The area had not been scanned for services before digging. No damage or injury occurred. Excavation was stopped immediately."}, {"n": 8, "ref": "16124-NM-SAMPLE-08", "time": "09:55", "title": "Emergency point blocked", "category": "Emergency preparedness – blocked access", "location": "Fire point and first aid station, south-west corner (Zone G)", "observed": "A delivery truck was parked in front of the fire point and first aid station, blocking access to the extinguishers and the first aid box.", "potential": "Delayed response in a fire or medical emergency.", "unsafe_acts": ["Violation / taking shortcuts", "Lack of awareness / knowledge"], "unsafe_conditions": ["Congestion/ restricted action/ poor access", "Inadequate warning system or notice"], "root_personal": ["Behavior"], "root_system": ["Inadequate Emergency Response Plan", "Inadequate Planned Inspections"], "immediate_actions": [["Driver located and truck moved to the plant parking area.", "Logistics Supervisor", "20/10/2026"], ["Access to the extinguishers and first aid box checked and cleared.", "HSE Officer", "20/10/2026"], ["Temporary no-parking cones placed in front of the emergency point.", "Site Supervisor", "20/10/2026"]], "root_causes": ["No ground marking in front of the emergency point.", "Delivery drivers not briefed on parking areas.", "Emergency access not included in the daily site walk."], "corrective_actions": [["Yellow hatched no-parking box painted in front of the emergency point.", "Site Supervisor", "22/10/2026"], ["Delivery drivers briefed at the gate on parking areas and emergency routes.", "Logistics Supervisor", "21/10/2026"], ["Emergency access added to the daily HSE inspection checklist.", "HSE Officer", "21/10/2026"]], "procedure": ["Emergency response plan: fire points, first aid stations and routes kept clear at all times.", "Marked no-parking zones in front of all emergency equipment.", "Gate induction for delivery drivers covering parking and emergency routes.", "Emergency access checked in the daily site inspection."], "risk": {"probability": "Rare", "severity": "Moderate", "level": "Low"}, "description": "On 20/10/2026 at 09:55, during a planned HSE site inspection, a delivery truck was found parked in front of the fire point and first aid station (Zone G), blocking access to the extinguishers and the first aid box. No emergency occurred. The driver was located and the truck was moved to the plant parking area."}];
+const SHORT=["Height","Swing","Trench","Lifting","Reversing","Crossing","Cable","Exit"];
+const S=[
+ {tag:"Work at height",name:"Open edge at the excavation",sev:"Potential: fatal",pos:[-9.6,1.6,-5.9],cam:[-2,9,3],
+  hap:"A section of edge protection is missing at the benched excavation. A worker stands right at the open edge to pass tools down.",
+  could:"A fall of about 2 m onto the bench below, with head or spine injuries.",
+  why:["Fencing removed for material access and never put back","No check of edge protection at the start of the shift","Tools passed by hand instead of lowered"],
+  fix:["Replace the fencing and toe boards before work restarts","Use the stairs as the only way in and out","Lower tools and materials with a rope or bucket","Inspect edge protection every shift"],
+  ask:"Who removed the fence, and why didn’t anyone put it back?"},
+ {tag:"People and plant",name:"Worker inside the excavator’s swing",sev:"Potential: fatal",pos:[-6.2,2.2,7.6],cam:[2,10,10],
+  hap:"A worker walks along the trench inside the swing radius of a working excavator. The operator is looking at the bucket and does not see him.",
+  could:"Struck or crushed by the counterweight or the bucket.",
+  why:["No exclusion zone marked around the machine","No banksman in the operator’s view","Walking route runs past the digging area"],
+  fix:["Mark the swing radius plus 1 m with cones or barriers","Keep a banksman where the operator can see him","Stop the machine before anyone enters the zone","Route pedestrians away from the dig"],
+  ask:"How would the operator know someone had entered the swing zone?"},
+ {tag:"Excavation",name:"Shoring strut missing",sev:"Potential: fatal",pos:[8,2.2,6.2],cam:[6,10,9],
+  hap:"One strut is missing from the trench shoring and spoil is piled at the trench edge, while a worker is in the trench.",
+  could:"The trench wall collapses and buries the worker.",
+  why:["Strut removed to pass a pipe through and not refitted","Spoil heaped right at the edge, adding load to the wall","No inspection after the change"],
+  fix:["Refit the strut before anyone re-enters","Keep spoil and materials well back from the edge","Inspect the trench every shift and after any change","Provide a safe ladder within reach"],
+  ask:"What changed in this trench since it was last inspected?"},
+ {tag:"Lifting",name:"Worker under the crane’s load",sev:"Potential: fatal",pos:[3.2,3.8,4],cam:[-8,10,-7],
+  hap:"A crane lifts a bundle of steel beams. A worker walks under the suspended load to take a shortcut.",
+  could:"Struck by the load, a slipping beam or a failed sling.",
+  why:["Lift zone not barricaded","No tag line, so the load swings","Lift plan not briefed to nearby workers"],
+  fix:["Barricade the lift zone and post a lookout","Use tag lines to control the load","Brief the lift plan to everyone nearby","Never walk under a suspended load"],
+  ask:"Who is responsible for keeping people out of the lift zone?"},
+ {tag:"Moving plant",name:"Truck reversing toward a pedestrian",sev:"Potential: fatal",pos:[13.6,2.4,6.2],cam:[6,9,10],
+  hap:"A dumper reverses in the plant area toward a worker walking behind it. A colleague shouts and he steps aside just in time.",
+  could:"A worker run over or crushed against the parked plant.",
+  why:["No separate pedestrian route through the plant area","No banksman for the reversing move","Reversing alarm lost in site noise"],
+  fix:["Separate people and plant with a barriered walkway","Use a banksman for every reversing move","Make eye contact with the driver before passing","Keep the reversing camera and alarm working"],
+  ask:"Where should pedestrians walk in the plant area?"},
+ {tag:"Traffic",name:"Crossing away from the zebra",sev:"Potential: major injury",pos:[-6,2.2,-2],cam:[-4,9,10],
+  hap:"A worker crosses the site road between parked plant, away from the zebra crossing, as a pickup approaches.",
+  could:"A worker hit by a vehicle.",
+  why:["Shortcut taken to save a few steps","Parked plant blocks the driver’s view","Vehicle driving above the site speed limit"],
+  fix:["Cross only at the marked zebra crossing","Keep sight lines clear at crossings","Enforce the site speed limit","Brief drivers on pedestrian priority"],
+  ask:"Why do people take this shortcut, and how do we make the right route easier?"},
+ {tag:"Hidden services",name:"Buried cable in the digging area",sev:"Potential: fatal",pos:[-10.5,1.4,7.4],cam:[-3,8,8],
+  hap:"The excavator digs toward a live cable that is not on the drawings. The bucket stops a hand’s width from it.",
+  could:"Electrocution, fire or a power outage to the area.",
+  why:["The area was not scanned for services","Permit to dig not checked before work started","Drawings not verified on site"],
+  fix:["Permit to dig before any excavation","Scan the area and mark services on the ground","Hand-dig trial pits near known or suspected services","Barricade, cover and mark exposed cables; sign them as live"],
+  ask:"What should the operator do the moment something unexpected appears in the dig?"},
+ {tag:"Emergency",name:"Emergency point blocked",sev:"Potential: delayed rescue",pos:[-18.4,2.6,9],cam:[10,9,5],
+  hap:"A delivery truck is parked in front of the fire and first aid point, blocking access to the extinguisher and the first aid box.",
+  could:"Delay in an emergency, when every second counts.",
+  why:["Parking outside the marked plant area","No marking on the ground in front of the point","Not picked up in the daily site walk"],
+  fix:["Keep emergency points and routes clear at all times","Mark a no-parking box in front of the point","Park only in the plant area","Include emergency access in the daily inspection"],
+  ask:"If there were a fire now, how long would it take to reach the extinguisher?"}
+];
+
+// ---------- renderer and scene ----------
+let mode="haz", current=-1; const seen=new Set();
+const stage=document.getElementById("stage");
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.prepend(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xDCE6EE); scene.fog=new THREE.Fog(0xDCE6EE,70,140);
+const camera=new THREE.PerspectiveCamera(40,1,0.1,400);
+const HOME={c:new THREE.Vector3(-24,28,32),t:new THREE.Vector3(0,0,0)};
+camera.position.copy(HOME.c);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true; controls.maxPolarAngle=1.38; controls.minDistance=6; controls.maxDistance=85;
+scene.add(new THREE.HemisphereLight(0xffffff,0xa9b6c2,0.7));
+const sun=new THREE.DirectionalLight(0xfff6e8,0.85); sun.position.set(-22,42,16); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-30,right:30,top:30,bottom:-30,far:120}); sun.shadow.bias=-0.0005;
+scene.add(sun);
+
+const mats={};
+const M=(c,o={})=>{const k=c+JSON.stringify(o);return mats[k]||(mats[k]=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.8,metalness:0},o)));};
+function box(w,h,d,c,x,y,z,p=scene,o){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),typeof c==="object"?c:M(c,o));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;p.add(m);return m;}
+function cyl(r1,r2,h,c,x,y,z,p=scene,seg=16){const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),M(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;p.add(m);return m;}
+function sph(r,c,x,y,z,p=scene){const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),M(c));m.position.set(x,y,z);m.castShadow=true;p.add(m);return m;}
+function grp(x=0,y=0,z=0,p=scene){const g=new THREE.Group();g.position.set(x,y,z);p.add(g);return g;}
+function beam(a,b,r,c,p=scene){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b);const d=B.clone().sub(A);const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),10),M(c));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());m.castShadow=true;p.add(m);return m;}
+function wheel(x,y,z,r,w,p){const m=cyl(r,r,w,0x1d1f22,x,y,z,p,18);m.rotation.x=Math.PI/2;const hub=cyl(r*.45,r*.45,w+.02,0x9aa3ab,x,y,z,p,12);hub.rotation.x=Math.PI/2;return m;}
+
+let curS=-1; const showIn={haz:[],fix:[]}; const onlyIn=(m,o)=>{showIn[m].push(o);o.userData.s=curS;return o;};
+const tween=[]; const T=(o,haz,fix,extra={})=>{tween.push(Object.assign({o,haz,fix,s:curS},extra));o.position.x=haz[0];o.position.z=haz[1];if(haz[2]!=null)o.rotation.y=haz[2];return o;};
+
+// ---------- ground with real holes ----------
+const SAND=0xE3D6BC, GROUNDBOT=-2.4;
+const holes=[{x0:-15.5,x1:-8.5,z0:-11.8,z1:-6.2},{x0:-12.4,x1:-8.6,z0:4.9,z1:6.3},{x0:6.8,x1:9.2,z0:2.6,z1:7.4}];
+(function ground(){
+  const X=[-20,20],Z=[-15,15];holes.forEach(h=>{X.push(h.x0,h.x1);Z.push(h.z0,h.z1);});
+  const xs=[...new Set(X)].sort((a,b)=>a-b), zs=[...new Set(Z)].sort((a,b)=>a-b);
+  for(let i=0;i<xs.length-1;i++)for(let j=0;j<zs.length-1;j++){
+    const cx=(xs[i]+xs[i+1])/2,cz=(zs[j]+zs[j+1])/2;
+    if(holes.some(h=>cx>h.x0&&cx<h.x1&&cz>h.z0&&cz<h.z1))continue;
+    box(xs[i+1]-xs[i],-GROUNDBOT,zs[j+1]-zs[j],SAND,cx,GROUNDBOT/2,cz);
+  }
+})();
+const SOIL=0x9C6B45, SOIL2=0x87583A;
+function frame(h,inset,top,bot,c){const w=h.x1-h.x0-2*inset,d=h.z1-h.z0-2*inset,cx=(h.x0+h.x1)/2,cz=(h.z0+h.z1)/2,hh=top-bot,y=(top+bot)/2,t=0.7;
+  box(w,hh,t,c,cx,y,h.z0+inset+t/2);box(w,hh,t,c,cx,y,h.z1-inset-t/2);box(t,hh,d-2*t,c,h.x0+inset+t/2,y,cz);box(t,hh,d-2*t,c,h.x1-inset-t/2,y,cz);}
+// 1 benched excavation: two benches and a floor
+const P=holes[0]; frame(P,0,-0.7,GROUNDBOT,SOIL); frame(P,0.7,-1.4,GROUNDBOT,SOIL2); box(P.x1-P.x0-2.8,0.3,P.z1-P.z0-2.8,0x7a4c31,(P.x0+P.x1)/2,-2.1,(P.z0+P.z1)/2);
+// stairs down into the pit
+const st=grp(-10.6,0,-11.1); for(let i=0;i<7;i++)box(1.1,0.12,0.42,0xBFC6CC,0,-0.15-i*0.28,0.42*i,st,{metalness:.4});
+beam([-11.15,0.8,-11.3],[-11.15,-1.2,-8.2],0.04,0xF2C230); beam([-10.05,0.8,-11.3],[-10.05,-1.2,-8.2],0.04,0xF2C230);
+// edge protection with a missing section
+function fenceRun(x0,z0,x1,z1,group){const L=Math.hypot(x1-x0,z1-z0),n=Math.max(2,Math.round(L/1.4));for(let i=0;i<=n;i++){const t=i/n;box(0.1,1.1,0.1,0xffffff,x0+(x1-x0)*t,0.55,z0+(z1-z0)*t,group);}
+  [0.55,1.05].forEach(y=>beam([x0,y,z0],[x1,y,z1],0.035,0xE8772E,group));box(Math.max(L*Math.abs(x1-x0)/L,0.06),0.15,Math.max(L*Math.abs(z1-z0)/L,0.06),0xF2C230,(x0+x1)/2,0.08,(z0+z1)/2,group);}
+const fg=grp(); fenceRun(-15.9,-12.2,-8.1,-12.2,fg);fenceRun(-15.9,-12.2,-15.9,-5.8,fg);fenceRun(-8.1,-12.2,-8.1,-5.8,fg);fenceRun(-15.9,-5.8,-11,-5.8,fg);
+curS=0; const gap=onlyIn("fix",grp()); fenceRun(-11,-5.8,-8.1,-5.8,gap);
+const w1=worker({ry:Math.PI}); T(w1,[-9.6,-5.45],[-11.6,-4.4]);
+const loose=onlyIn("haz",grp()); [0,1,2].forEach(i=>{const r=box(2.8,0.08,0.1,0xE8772E,-11.6+i*0.15,0.06+i*0.09,-4.2-i*0.3,loose);r.rotation.y=0.2*i;});
+
+curS=-1;
+// ---------- workers ----------
+function worker({x=0,z=0,ry=0,vest=0xD7E52B,suit=0x2E5C8A,hat=0xffffff,arm=0}={}){
+  const g=grp(x,0,z); g.rotation.y=ry;
+  box(0.18,0.8,0.22,suit,-0.12,0.4,0,g); box(0.18,0.8,0.22,suit,0.12,0.4,0,g);
+  box(0.2,0.1,0.32,0x2b2b2b,-0.12,0.05,0.05,g); box(0.2,0.1,0.32,0x2b2b2b,0.12,0.05,0.05,g);
+  box(0.56,0.7,0.34,vest,0,1.15,0,g);
+  [0.95,1.25].forEach(y=>box(0.58,0.05,0.36,0xE6E9EC,0,y,0,g,{metalness:.6,roughness:.3}));
+  const la=grp(-0.36,1.45,0,g), ra=grp(0.36,1.45,0,g);
+  box(0.14,0.62,0.16,suit,0,-0.3,0,la); box(0.14,0.62,0.16,suit,0,-0.3,0,ra); ra.rotation.z=arm; la.rotation.x=0.15;
+  sph(0.18,0xA0694A,0,1.7,0,g);
+  const h=new THREE.Mesh(new THREE.SphereGeometry(0.22,16,8,0,Math.PI*2,0,Math.PI/2),M(hat));h.position.y=1.76;h.castShadow=true;g.add(h);
+  cyl(0.27,0.27,0.03,hat,0,1.77,0.03,g);
+  return g;
+}
+function cone(x,z,p=scene){const g=grp(x,0,z,p);box(0.5,0.05,0.5,0x222222,0,0.025,0,g);const c=new THREE.Mesh(new THREE.ConeGeometry(0.2,0.7,14),M(0xE8772E));c.position.y=0.38;c.castShadow=true;g.add(c);cyl(0.13,0.15,0.1,0xffffff,0,0.42,0,g);return g;}
+function barrier(x,z,ry,c,p=scene){const g=grp(x,0,z,p);g.rotation.y=ry;box(1.6,0.8,0.45,c,0,0.4,0,g);box(1.5,0.2,0.5,c,0,0.9,0,g);return g;}
+function sign(x,z,ry,c=0xF2C230){const g=grp(x,0,z);g.rotation.y=ry;cyl(0.04,0.04,2,0x9aa3ab,0,1,0,g);const s=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.04,3),M(c));s.rotation.x=Math.PI/2;s.rotation.y=Math.PI/2;s.position.y=2.1;s.castShadow=true;g.add(s);box(0.06,0.3,0.05,0x111111,0,2.1,0.03,g);return g;}
+
+// ---------- canvas-textured boards ----------
+const texCache={};
+function tex(key,draw,w=512,h=256){if(texCache[key])return texCache[key];const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.anisotropy=4;return texCache[key]=t;}
+function board(w,h,lines,bg,fg,x,y,z,p=scene,head){
+  const t=tex(lines.join("|")+bg+head,(g,W,H)=>{g.fillStyle=bg;g.fillRect(0,0,W,H);g.textAlign="center";g.textBaseline="middle";
+    let rest=lines, top=0;
+    if(head){g.fillStyle=head;g.fillRect(0,0,W,H*0.36);g.fillStyle="#fff";g.font=`bold ${H*0.22}px Arial, sans-serif`;g.fillText(lines[0],W/2,H*0.19);rest=lines.slice(1);top=H*0.36;}
+    const n=rest.length, band=(H-top)/Math.max(n,1);
+    rest.forEach((l,k)=>{const big=!head&&k===0;g.fillStyle=fg;g.font=`${big?"bold":"600"} ${big?Math.min(band*0.62,H*0.3):Math.min(band*0.5,H*0.2)}px Arial, sans-serif`;g.fillText(l,W/2,top+band*(k+0.5));});
+    g.strokeStyle=head||fg;g.lineWidth=10;g.strokeRect(5,5,W-10,H-10);});
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:t,roughness:.7}));m.position.set(x,y,z);p.add(m);
+  const back=new THREE.Mesh(new THREE.PlaneGeometry(w,h),M(0xBFC6CC));back.rotation.y=Math.PI;back.position.set(x,y,z-0.01);p.add(back);return m;}
+const SIGN={danger:["#fff","#111","#C62828"],warning:["#F2C230","#111",null],mandatory:["#fff","#0D47A1","#1565C0"],info:["#fff","#13293D","#2E7D4F"],safe:["#2E7D4F","#fff",null]};
+function signPost(x,z,ry,kind,lines){const g=grp(x,0,z);g.rotation.y=ry;
+  [-0.45,0.45].forEach(px=>cyl(0.04,0.04,2.2,0x9aa3ab,px,1.1,0,g));
+  if(kind==="speed"){const t=tex("speed"+lines[0],(c,W,H)=>{c.fillStyle="#fff";c.beginPath();c.arc(W/2,H/2,W/2-4,0,7);c.fill();c.lineWidth=W*0.1;c.strokeStyle="#C62828";c.beginPath();c.arc(W/2,H/2,W/2-W*0.07,0,7);c.stroke();c.fillStyle="#111";c.font=`bold ${H*0.42}px Arial`;c.textAlign="center";c.textBaseline="middle";c.fillText(lines[0],W/2,H/2+4);},256,256);
+    const m=new THREE.Mesh(new THREE.CircleGeometry(0.5,32),new THREE.MeshStandardMaterial({map:t}));m.position.set(0,2.1,0.03);g.add(m);const b=new THREE.Mesh(new THREE.CircleGeometry(0.5,32),M(0xBFC6CC));b.rotation.y=Math.PI;b.position.set(0,2.1,0.02);g.add(b);return g;}
+  const [bg,fg,head]=SIGN[kind];board(1.3,0.75,lines,bg,fg,0,1.95,0.05,g,head);return g;}
+function panel(x,z,ry,white){const g=grp(x,0.9,z);g.rotation.y=ry;
+  const key=white?"taqa":"hydro";
+  const t=tex(key,(c,W,H)=>{c.fillStyle=white?"#F4F6F8":"#13293D";c.fillRect(0,0,W,H);c.textAlign="center";c.textBaseline="middle";
+    if(white){c.fillStyle="#13293D";c.font="bold 120px Arial";c.fillText("TAQA",W/2,H*0.4);c.font="600 38px Arial";c.fillStyle="#2E86C1";c.fillText("Water Solutions",W/2,H*0.72);}
+    else{const fit=(t,px,wt,y,col)=>{c.fillStyle=col;let f=px;do{c.font=`${wt} ${f}px Arial`;f-=2;}while(c.measureText(t).width>W*0.86&&f>10);c.fillText(t,W/2,y);};
+      fit("HYDROPOWER ENERGY",64,"bold",H*0.36,"#fff");fit("& GENERAL CONSTRUCTION LLC",40,"600",H*0.62,"#E8772E");}
+    c.fillStyle="#E8772E";c.fillRect(0,H-14,W,14);},512,320);
+  const mt=new THREE.MeshStandardMaterial({map:t,roughness:.8}), side=M(0xBFC6CC);
+  const m=new THREE.Mesh(new THREE.BoxGeometry(2,1.8,0.12),[side,side,side,side,mt,mt]);m.castShadow=m.receiveShadow=true;g.add(m);
+  box(0.08,1.9,0.2,0x9aa3ab,-1,0.05,0,g);return g;}
+
+// ---------- hoarding, roads, welfare ----------
+for(let i=0;i<20;i++){const x=-19+i*2;panel(x,-15.06,0,i%2);panel(x,15.06,0,i%2);}
+for(let i=0;i<15;i++){const z=-14+i*2;panel(-20.06,z,Math.PI/2,i%2);panel(20.06,z,Math.PI/2,i%2);}
+const ROAD=0x2f3438;
+box(36,0.06,3.2,ROAD,0,0.03,-2); box(3.2,0.06,12.6,ROAD,0,0.03,5.3);
+for(let i=-17;i<18;i+=2)if(Math.abs(i)>2.5&&Math.abs(i+12.8)>1.6)box(1,0.07,0.14,0xffffff,i,0.07,-2);
+for(let i=1;i<12;i+=2)box(0.14,0.07,1,0xffffff,0,0.07,0.5+i);
+for(let i=0;i<6;i++){box(0.32,0.07,2.8,0xffffff,2.2+i*0.6,0.07,-2);box(2.8,0.07,0.32,0xffffff,0,0.07,0.3+i*0.6);}
+[[-17,-0.1],[-15.4,-0.1],[-9,-0.1],[9,-0.1],[13,-0.1],[17,-0.1]].forEach(([x,z],i)=>barrier(x,z,0,i%2?0xffffff:0xD23B2E));
+[[6,-3.9],[10,-3.9],[14,-3.9]].forEach(([x,z],i)=>barrier(x,z,0,i%2?0xD23B2E:0xffffff));
+[[-18,-4],[18,-4],[-2.4,11.5]].forEach(([x,z])=>{cyl(0.07,0.09,6,0x9aa3ab,x,3,z);box(0.9,0.12,0.3,0x6b7680,x+0.35,6,z);});
+function building(x,z,w,h,d,roof){const g=grp(x,0,z);box(w,0.25,d+0.3,0xBFC6CC,0,0.12,0,g);box(w,h,d,0xffffff,0,0.25+h/2,0,g);box(w+0.3,0.25,d+0.4,roof,0,h+0.37,0,g);
+  for(let i=0;i<Math.floor(w/1.6);i++)box(0.9,0.7,0.05,0x5a7d9a,-w/2+0.9+i*1.6,1.6,d/2+0.01,g,{metalness:.3,roughness:.2});box(0.9,1.7,0.06,0x13293D,w/2-0.8,1.1,d/2+0.02,g);return g;}
+building(4,-10.5,6.5,2.6,3.6,0x13293D); building(10.8,-10.5,4.6,2.4,3.6,0x6b7680); building(15.2,-10.5,2.6,2.4,3,0x6b7680);
+box(2.6,1.6,0.1,0x2E7D4F,8.6,1.9,-6.6); cyl(0.05,0.05,2.6,0x9aa3ab,7.5,1.3,-6.6); cyl(0.05,0.05,2.6,0x9aa3ab,9.7,1.3,-6.6);
+for(let i=0;i<3;i++)for(let j=0;j<2;j++)sph(0.16,[0x1565C0,0xC62828,0x2E7D4F][i],7.9+i*0.7,1.6+j*0.6,-6.53);
+signPost(-8.6,-4.6,0,"danger",["DANGER","Deep excavation","Keep out"]);
+signPost(-14.8,-4.6,0,"mandatory",["PPE REQUIRED","Hard hat · Vest","Safety boots"]);
+signPost(-4,-4.4,0,"speed",["15"]);
+signPost(4,-4.4,0,"info",["PEDESTRIAN","CROSSING"]);
+signPost(-3.2,10.6,-0.5,"warning",["CAUTION","Excavator","working"]);
+signPost(4.6,1.4,-0.3,"warning",["DANGER","Overhead","loads"]);
+signPost(10.4,8.2,0.4,"warning",["CAUTION","Reversing","vehicles"]);
+signPost(10.8,1.8,0.3,"danger",["DANGER","Open trench"]);
+signPost(-13.2,3.6,0,"warning",["DANGER","Buried","services"]);
+signPost(-1.6,-6.4,0,"safe",["ASSEMBLY","POINT"]);
+signPost(17.2,-6.4,0,"mandatory",["SITE OFFICE","Report all","near misses"]);
+
+// ---------- Sabir, HSE officer, beside the site office ----------
+function hseOfficer(x,z,ry){const g=grp(x,0,z);g.rotation.y=ry;g.scale.setScalar(1.12);
+  const SH=0xDCCBA7, SHd=0xC9B791, TR=0x2c3035, SK=0xB27552, SKd=0x9A6244, BR=0x403b36, GR=0xB5AFA6, HAIR=0x55524e, TIE=0x5A2E1E;
+  const S=(r,c,px,py,pz,sx=1,sy=1,sz=1,p=g)=>{const m=sph(r,c,px,py,pz,p);m.scale.set(sx,sy,sz);return m;};
+  const C=(r1,r2,h,c,px,py,pz,p=g,seg=14)=>cyl(r1,r2,h,c,px,py,pz,p,seg);
+  const seg=(r,c,ps,pl,ts,tl,px,py,pz,sx=1,sy=1,sz=1,p=g)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,24,16,ps,pl,ts,tl),M(c,{side:THREE.DoubleSide}));m.position.set(px,py,pz);m.scale.set(sx,sy,sz);m.castShadow=true;p.add(m);return m;};
+  // safety boots
+  // legs on hip pivots so he can walk: trousers with creases, safety boots
+  g.userData.legs=[-0.12,0.12].map(lx=>{const lg=grp(lx,0.9,0,g);
+    C(0.1,0.085,0.78,TR,0,-0.4,0,lg);box(0.012,0.7,0.012,0x3a3f45,0,-0.4,0.092,lg);
+    box(0.19,0.1,0.3,0x1b1b1b,0,-0.85,0.03,lg);S(0.095,0x1b1b1b,0,-0.83,0.16,1,0.6,1,lg);box(0.2,0.025,0.32,0x6b4a2b,0,-0.888,0.03,lg);return lg;});
+  box(0.46,0.18,0.28,TR,0,0.9,0,g);
+  // belt and buckle
+  const belt=C(0.245,0.245,0.07,0x151515,0,0.99,0,g,20);belt.scale.z=0.62; box(0.08,0.06,0.02,0xC9CED3,0,0.99,0.155,g,{metalness:.8,roughness:.3});
+  // shirt torso: oval, tucked in
+  const tor=C(0.27,0.24,0.6,SH,0,1.3,0,g,20);tor.scale.z=0.64;
+  S(0.27,SH,0,1.58,0,1,0.35,0.64);
+  // placket, buttons, pocket with flap and pen
+  box(0.035,0.5,0.01,SHd,0,1.29,0.172,g); [1.12,1.24,1.36].forEach(y=>S(0.012,0xEFE6D4,0,y,0.179));
+  box(0.13,0.14,0.012,SHd,0.13,1.38,0.168,g); box(0.135,0.035,0.016,SHd,0.13,1.445,0.172,g);
+  C(0.01,0.01,0.12,0x1F4E9A,0.17,1.47,0.176,g,8);
+  // collar and tie
+  [[-1,0.4],[1,-0.4]].forEach(([sx,rz])=>{const c=box(0.13,0.07,0.04,0xEDE1C8,sx*0.065,1.63,0.13,g);c.rotation.set(-0.5,0,rz);});
+  box(0.07,0.06,0.04,TIE,0,1.6,0.155,g);
+  const tie=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.035,0.42,4),M(TIE));tie.rotation.y=Math.PI/4;tie.scale.z=0.25;tie.position.set(0,1.37,0.17);g.add(tie);
+  const tip=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.06,4),M(TIE));tip.rotation.set(Math.PI,Math.PI/4,0);tip.scale.z=0.25;tip.position.set(0,1.13,0.17);g.add(tip);
+  box(0.03,0.36,0.004,0x6B3A27,0.008,1.37,0.177,g);
+  // HSE armband on left sleeve
+  // arms: shoulder, sleeve, cuff, hand
+  const arm=(side,rx,rz)=>{const a=grp(side*0.31,1.56,0,g);a.rotation.set(rx,0,rz);
+    S(0.085,SH,0,0,0,1,1,1,a); C(0.075,0.065,0.3,SH,0,-0.16,0,a);
+    const fa=grp(0,-0.31,0,a); S(0.066,SH,0,0,0,1,1,1,fa);
+    return {a,fa};};
+  const L=arm(-1,-0.25,0.12), R=arm(1,-0.15,-0.12); g.userData.arm=R.a;
+  L.fa.rotation.x=-1.25; R.fa.rotation.x=-1.05;
+  [L,R].forEach(({fa})=>{C(0.064,0.056,0.26,SH,0,-0.13,0,fa);C(0.058,0.058,0.04,0xEDE1C8,0,-0.27,0,fa);S(0.05,SK,0,-0.33,0,0.9,1.2,0.7,fa);});
+  const band=C(0.078,0.078,0.07,0x2E7D4F,0,-0.12,0,L.a);
+  const bt=tex("hseBand",(c,W,H)=>{c.fillStyle="#2E7D4F";c.fillRect(0,0,W,H);c.fillStyle="#fff";c.font="bold 40px Arial";c.textAlign="center";c.textBaseline="middle";c.fillText("HSE   HSE   HSE",W/2,H/2+2);},256,48);
+  band.material=new THREE.MeshStandardMaterial({map:bt,roughness:.8});
+  // clipboard with checklist in left hand, pen in right
+  const cb=grp(0,-0.36,0.07,L.fa); cb.rotation.x=1.3;
+  const ct=tex("clip",(c,W,H)=>{c.fillStyle="#8B5A2B";c.fillRect(0,0,W,H);c.fillStyle="#fff";c.fillRect(14,30,W-28,H-44);c.fillStyle="#13293D";c.font="bold 22px Arial";c.fillText("NEAR MISS",24,62);c.font="16px Arial";
+    for(let i=0;i<6;i++){c.strokeStyle="#9aa3ab";c.strokeRect(24,82+i*26,14,14);c.fillStyle="#555";c.fillRect(46,88+i*26,W-90-(i%3)*20,3);if(i<3){c.strokeStyle="#2E7D4F";c.lineWidth=3;c.beginPath();c.moveTo(26,90+i*26);c.lineTo(31,95+i*26);c.lineTo(38,84+i*26);c.stroke();c.lineWidth=1;}}},200,256);
+  const cbm=new THREE.Mesh(new THREE.BoxGeometry(0.24,0.31,0.015),[M(0x8B5A2B),M(0x8B5A2B),M(0x8B5A2B),M(0x8B5A2B),new THREE.MeshStandardMaterial({map:ct,roughness:.7}),M(0x8B5A2B)]);cbm.castShadow=true;cb.add(cbm);
+  box(0.1,0.03,0.025,0xC0C7CC,0,0.15,0.01,cb,{metalness:.8,roughness:.3});
+  const pen=C(0.008,0.008,0.14,0x1F4E9A,0,-0.36,0.04,R.fa,8);pen.rotation.x=1.2;
+  // neck and head
+  C(0.075,0.085,0.12,SK,0,1.66,0.0);
+  const head=grp(0,1.82,0.01,g); g.userData.head=head;
+  S(0.165,SK,0,0,0,0.95,1.12,1.0,head);
+  [-1,1].forEach(sx=>S(0.04,SKd,sx*0.158,0.0,-0.01,0.45,0.95,0.7,head));
+  S(0.026,SK,0,0.0,0.158,0.75,1.5,0.9,head);S(0.024,SKd,0,-0.035,0.172,1.15,0.85,1,head);[-1,1].forEach(sx=>S(0.014,SKd,sx*0.022,-0.04,0.163,1,0.8,1,head));
+  [-1,1].forEach(sx=>{S(0.024,0xF3EEE6,sx*0.058,0.035,0.142,1.2,0.75,0.6,head);S(0.012,0x3B2416,sx*0.058,0.035,0.153,1,1,0.6,head);
+    const br=box(0.075,0.015,0.02,0x221f1c,sx*0.06,0.078,0.148,head);br.rotation.z=sx*-0.12;});
+  // full beard following the jaw: dark with grey-white chin, plus moustache
+  seg(0.172,BR,Math.PI/2-1.35,2.7,Math.PI*0.585,Math.PI*0.4,0,0,0,0.98,1.15,1.04,head);
+  S(0.06,0x948f88,0,-0.14,0.105,1.25,0.95,0.75,head);S(0.035,0x6f6a65,-0.055,-0.125,0.115,1,1,0.7,head);S(0.035,0x6f6a65,0.055,-0.125,0.115,1,1,0.7,head);
+  const mo=C(0.016,0.016,0.11,0x2a2622,0,-0.062,0.158,head,8);mo.rotation.z=Math.PI/2;
+  box(0.07,0.016,0.02,0x8E5040,0,-0.088,0.158,head);
+  // swept-back grey-black hair showing under the hard hat
+  seg(0.172,HAIR,Math.PI/2+0.9,Math.PI*2-1.8,Math.PI*0.2,Math.PI*0.32,0,0.01,-0.005,1.0,1.12,1.03,head);
+  [-1,1].forEach(sx=>{const st=box(0.02,0.06,0.07,0x8a8781,sx*0.155,0.06,-0.04,head);});
+  // hard hat with ridge, brim, HSE badge
+  const hat=grp(0,0.13,0,head);
+  seg(0.2,0xffffff,0,Math.PI*2,0,Math.PI/2,0,0,0,1,0.85,1.05,hat);
+  const brim=C(0.235,0.235,0.02,0xffffff,0,0.0,0.03,hat,24);brim.scale.set(1,1,1.12);
+  box(0.035,0.04,0.36,0xF2F2F2,0,0.165,0,hat);
+  box(0.075,0.045,0.01,0x2E7D4F,0,0.1,0.198,hat).rotation.x=-0.35;
+  // name tag
+  const tg=tex("sabirTag",(c,W,H)=>{c.fillStyle="#13293D";c.beginPath();c.roundRect?c.roundRect(4,4,W-8,H-8,26):c.rect(4,4,W-8,H-8);c.fill();c.fillStyle="#E8772E";c.fillRect(4,H-22,W-8,12);
+    c.textAlign="center";c.textBaseline="middle";c.fillStyle="#fff";c.font="bold 64px Arial";c.fillText("SABIR",W/2,H*0.36);c.fillStyle="#9ED3B0";c.font="600 38px Arial";c.fillText("HSE Officer",W/2,H*0.68);},512,200);
+  const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tg,depthTest:false}));tag.scale.set(1.3,0.51,1);tag.position.set(0,2.6,0);tag.renderOrder=5;g.add(tag);
+  return g;}
+const sabir=hseOfficer(15.6,-5.3,-0.35);
+
+// ---------- 2 excavator, 7 cable ----------
+curS=1;
+const exc=grp(-6.3,0,5.6);
+[-0.9,0.9].forEach(z=>{box(3.4,0.6,0.6,0x1d1f22,0,0.32,z,exc);[-1.4,1.4].forEach(x=>{const w=cyl(0.3,0.3,0.62,0x1d1f22,x,0.32,z,exc);w.rotation.x=Math.PI/2;});});
+const house=grp(0,0.75,0,exc);
+box(2.6,1.0,2.0,0xF2C230,0.2,0.55,0,house); box(0.9,0.9,1.9,0x3a3a3a,1.4,0.45,0,house);
+box(1.0,1.1,0.9,0xF2C230,-0.5,1.6,0.5,house); box(0.85,0.75,0.92,0x8fc1e3,-0.55,1.7,0.5,house,{metalness:.2,roughness:.1});
+const bp=grp(-1.1,1.0,-0.3,house); bp.rotation.z=0.55;
+box(3.2,0.4,0.4,0xF2C230,-1.6,0,0,bp); const sp=grp(-3.2,0,0,bp); sp.rotation.z=-1.7; box(2.2,0.3,0.3,0xF2C230,-1.1,0,0,sp);
+const bk=grp(-2.2,0,0,sp); bk.rotation.z=0.6; box(0.7,0.6,0.8,0x3a3a3a,-0.3,0,0,bk);
+beam([-1.0,1.6,-0.3],[-2.2,2.4,-0.3],0.07,0xC0C7CC,house);
+const w2=worker({ry:Math.PI/2}); T(w2,[-6.4,7.6],[-2.6,11.2]);
+const ring=onlyIn("haz",new THREE.Mesh(new THREE.RingGeometry(4.6,4.95,64),new THREE.MeshBasicMaterial({color:0xE8772E,side:THREE.DoubleSide,transparent:true,opacity:.7})));
+ring.rotation.x=-Math.PI/2; ring.position.set(-6.3,0.09,5.6); scene.add(ring);
+const exz=onlyIn("fix",grp()); for(let a=0;a<12;a++){const t=a/12*Math.PI*2;const x=-6.3+Math.cos(t)*5.1,z=5.6+Math.sin(t)*5.1;if(x>-8.4&&x<-4.2||x>-9.2)cone(x,z,exz);}
+const bank=onlyIn("fix",worker({x:-2.2,z:2.6,ry:-0.6,vest:0xE8772E,arm:-2.6}));
+curS=6;
+// trench contents and the buried cable
+box(3.8,0.2,1.4,0x7a4c31,-10.5,-1.5,5.6);
+const cable=cyl(0.1,0.1,4.2,0x111111,-10.5,-0.55,6.0,scene); cable.rotation.z=Math.PI/2;
+const ctape=cyl(0.105,0.105,0.6,0xE8772E,-10.5,-0.55,6.0); ctape.rotation.z=Math.PI/2;
+// fixed view: exposed cable boxed in by a full barricade, covered, marked and signed
+const cmark=onlyIn("fix",grp());
+const cx0=-12.9,cx1=-8.2,cz0=4.4,cz1=6.8;
+[[cx0,cz0],[cx1,cz0],[cx1,cz1],[cx0,cz1],[(cx0+cx1)/2,cz0],[(cx0+cx1)/2,cz1]].forEach(([x,z])=>{for(let i=0;i<4;i++)box(0.1,0.28,0.1,i%2?0xffffff:0xC62828,x,0.14+i*0.28,z,cmark);});
+[[cx0,cz0,cx1,cz0],[cx1,cz0,cx1,cz1],[cx1,cz1,cx0,cz1],[cx0,cz1,cx0,cz0]].forEach(([a,b,c,d])=>{beam([a,1.0,b],[c,1.0,d],0.03,0xC62828,cmark);beam([a,0.6,b],[c,0.6,d],0.03,0xffffff,cmark);});
+const duct=cyl(0.17,0.17,4.0,0xF2C230,-10.5,-0.55,6.0,cmark); duct.rotation.z=Math.PI/2;
+for(let i=0;i<5;i++){const b=cyl(0.175,0.175,0.12,0x111111,-12.2+i*0.85,-0.55,6.0,cmark);b.rotation.z=Math.PI/2;}
+[[-12.6,6.45],[-10.5,6.45],[-8.6,6.45]].forEach(([x,z])=>{box(0.06,0.9,0.06,0xF2C230,x,0.45,z,cmark);box(0.3,0.2,0.04,0xF2C230,x,0.85,z+0.03,cmark);});
+cmark.add(signPost(-10.5,7.3,0,"danger",["DANGER","Live cable","Hand dig only"]));
+const spoilA=new THREE.Mesh(new THREE.ConeGeometry(1.1,0.9,12),M(0x9C6B45)); spoilA.position.set(-11,0.45,3.6); spoilA.castShadow=true; scene.add(spoilA);
+
+// ---------- 3 trench with shoring ----------
+curS=2;
+const H=holes[2]; box(H.x1-H.x0,0.2,H.z1-H.z0,0x7a4c31,8,-2.1,5);
+const box3=grp(8,0,5);
+[-1.05,1.05].forEach(x=>box(0.12,2.4,4.4,0xD8DEE3,x,-0.9,0,box3,{metalness:.5,roughness:.4}));
+[[-1.4,-1.2],[-1.4,1.2],[-0.2,-1.2]].forEach(([y,z])=>{const s=cyl(0.09,0.09,2,0x2E86C1,0,y,z,box3);s.rotation.z=Math.PI/2;});
+const strut=onlyIn("fix",cyl(0.09,0.09,2,0x2E86C1,0,-0.2,1.2,box3)); strut.rotation.z=Math.PI/2;
+const w3=worker({x:8,z:5.4,ry:0}); w3.position.y=-2.0;
+const lad=grp(7.3,0,3.2); [-0.2,0.2].forEach(x=>box(0.05,3,0.05,0xC0C7CC,x,-0.6,0,lad)); for(let i=0;i<7;i++)box(0.4,0.04,0.04,0xC0C7CC,0,-1.9+i*0.42,0,lad);
+const spoil=new THREE.Mesh(new THREE.ConeGeometry(1.3,1.2,12),M(0x9C6B45)); spoil.castShadow=true; spoil.position.y=0.6; scene.add(spoil); T(spoil,[10.2,5],[5.6,10.6]);
+[[6.2,2.2],[9.8,2.2],[6.2,7.8],[9.8,7.8]].forEach(([x,z])=>onlyIn("fix",cone(x,z)));
+
+// ---------- 4 crane ----------
+curS=3;
+const crane=grp(0,0,9.8);
+box(2.2,0.7,5.2,0xF0A04B,0,0.95,0,crane); [-1.8,-0.6,1.0,2.0].forEach(z=>{wheel(-1.1,0.45,z,0.45,0.35,crane);wheel(1.1,0.45,z,0.45,0.35,crane);});
+crane.children.slice(-16).forEach(w=>w.rotation.set(0,0,Math.PI/2));
+box(2.0,1.2,1.2,0xF0A04B,0,1.9,2.2,crane); box(1.9,0.6,0.05,0x8fc1e3,0,2.1,2.81,crane,{metalness:.2,roughness:.1});
+[[-1.1,-2],[1.1,-2],[-1.1,1.6],[1.1,1.6]].forEach(([x,z])=>{box(1.6,0.2,0.25,0xD23B2E,x*1.6,0.75,z,crane);box(0.5,0.08,0.5,0x333333,x*2.3,0.04,z,crane);box(0.15,0.7,0.15,0x9aa3ab,x*2.3,0.4,z,crane);});
+cyl(0.9,0.9,0.4,0x3a3a3a,0,1.5,-0.8,crane,20); box(1.4,1.1,2.0,0xF0A04B,0.2,2.25,-1.0,crane);
+const tip=[3.4,10,4.0], pivot=[0.2,2.9,8.6];
+beam(pivot,[ (pivot[0]+tip[0])/2,(pivot[1]+tip[1])/2,(pivot[2]+tip[2])/2 ],0.32,0xF0A04B);
+beam([ (pivot[0]+tip[0])/2,(pivot[1]+tip[1])/2,(pivot[2]+tip[2])/2 ],tip,0.24,0xF2C230);
+const rope=beam(tip,[3.4,3.6,4.0],0.025,0x222222);
+const hookG=grp(3.4,0,4.0); box(0.3,0.35,0.3,0xF2C230,0,3.45,0,hookG);
+const loadG=grp(0,0,0,hookG);
+for(let i=0;i<3;i++)box(3,0.25,0.25,0x6E7B87,0,2.6+i*0.27,(i-1)*0.28,loadG,{metalness:.6,roughness:.4});
+beam([0,3.3,0],[-1.2,2.95,0],0.02,0x2E7D4F,loadG);beam([0,3.3,0],[1.2,2.95,0],0.02,0x2E7D4F,loadG);
+const tagline=onlyIn("fix",grp()); beam([4.9,2.6,4],[5.05,0.8,6.65],0.02,0xF2C230,tagline);
+const tagman=onlyIn("fix",worker({x:5.1,z:7.0,ry:-3.04,vest:0xE8772E,arm:-0.9}));
+const w4=worker({ry:Math.PI}); T(w4,[3.2,3.9],[6.6,-0.15]);
+const liftZone=onlyIn("fix",grp()); [[1.1,2.3],[5.7,2.3],[5.7,5.7],[1.1,5.7],[3.4,2.3],[3.4,5.7],[1.1,4],[5.7,4]].forEach(([x,z])=>cone(x,z,liftZone));
+
+// ---------- 5 plant area and dumper ----------
+curS=4;
+box(7.4,0.04,9,0xC9CED3,14.6,0.03,5); for(let i=0;i<4;i++)box(0.1,0.05,3,0xffffff,11.4+i*2.2,0.06,1.6);
+function dumper(){const g=grp();box(1.9,0.5,3.6,0x2b2f33,0,0.75,0,g);[-1.2,1.2].forEach(z=>{wheel(-1.05,0.5,z,0.5,0.4,g);wheel(1.05,0.5,z,0.5,0.4,g);});
+  g.children.filter(c=>c.geometry&&c.geometry.type==="CylinderGeometry").forEach(w=>w.rotation.set(0,0,Math.PI/2));
+  box(1.8,1.1,1.1,0xE8772E,0,1.55,-1.15,g); box(1.7,0.5,0.05,0x8fc1e3,0,1.75,-1.71,g,{metalness:.2,roughness:.1});
+  const bd=grp(0,1.05,0.65,g); box(2,0.1,2.4,0x5FA34A,0,0,0,bd); box(2,0.9,0.1,0x5FA34A,0,0.45,-1.15,bd); box(0.1,0.9,2.4,0x5FA34A,-0.95,0.45,0,bd); box(0.1,0.9,2.4,0x5FA34A,0.95,0.45,0,bd);
+  const beacon=sph(0.12,0xFFB300,0,2.2,-1.15,g); g.userData.beacon=beacon; return g;}
+const dump=dumper(); T(dump,[13.4,3.9,0],[13.4,1.6,0]);
+const w5=worker({ry:Math.PI}); T(w5,[13.4,7.0],[18.5,8.6]);
+const walk=onlyIn("fix",grp()); for(let i=0;i<5;i++)barrier(17.6,1.4+i*1.7,Math.PI/2,i%2?0xffffff:0xD23B2E,walk);
+const w5b=onlyIn("fix",worker({x:11.5,z:6.5,ry:Math.PI/2,vest:0xE8772E,arm:-2.6}));
+const parked=dumper(); parked.position.set(16.2,0,11.8); parked.rotation.y=Math.PI/2;
+const mixer=grp(11.6,0,11.8); box(3.4,0.5,1.8,0x2b2f33,0,0.7,0,mixer); [-1.1,1.1].forEach(x=>{wheel(x,0.45,-0.8,0.45,0.3,mixer);wheel(x,0.45,0.8,0.45,0.3,mixer);});
+box(1,1.1,1.7,0xF2C230,1.3,1.5,0,mixer); const drum=cyl(0.7,0.45,2.2,0xE6E9EC,-0.5,1.6,0,mixer); drum.rotation.z=1.3;
+
+// ---------- 6 road crossing ----------
+curS=5;
+const w6=worker({ry:0}); T(w6,[-6,-2.2,0],[2.6,-4.3,0]);
+const car=grp(); box(1.8,0.6,3.6,0x4CAF50,0,0.7,0,car); box(1.7,0.7,1.8,0x2b2f33,0,1.35,0.3,car,{metalness:.3,roughness:.2});
+box(1.75,0.25,1.4,0x4CAF50,0,0.55,-1.2,car);
+[[-0.9,-1.2],[0.9,-1.2],[-0.9,1.2],[0.9,1.2]].forEach(([x,z])=>{const w=wheel(x,0.38,z,0.38,0.3,car);w.rotation.set(0,0,Math.PI/2);});
+car.rotation.y=Math.PI/2; T(car,[-10.2,-2.4],[-16.4,-2.4]);
+// corrective action: extra zebra crossing on the west side of the site road
+const zebraW=onlyIn("fix",grp()); for(let i=0;i<4;i++)box(0.32,0.07,2.8,0xffffff,-13.7+i*0.6,0.07,-2,zebraW);
+const parkedCar=grp(-8,0,-0.5); box(1.6,0.9,3,0xF2C230,0,0.75,0,parkedCar); box(1.5,0.6,1.5,0x2b2f33,0,1.45,0.2,parkedCar); parkedCar.rotation.y=Math.PI/2;
+
+curS=7;
+// ---------- 8 emergency point (south-west corner, clear of the excavation) ----------
+const ep=grp(-19.2,0,9); ep.rotation.y=Math.PI/2;
+box(1.1,1.9,0.6,0xC62828,0,0.95,0,ep); box(1.3,0.12,0.8,0xC62828,0,1.95,0,ep);
+cyl(0.16,0.16,0.7,0xD32F2F,-0.25,0.55,0.35,ep); cyl(0.16,0.16,0.7,0xD32F2F,0.25,0.55,0.35,ep);
+board(0.9,0.5,["FIRE POINT","FIRST AID"],"#C62828","#fff",0,1.5,0.32,ep);
+const nopark=onlyIn("fix",grp()); 
+box(2.2,0.05,0.12,0xF2C230,-17.6,0.06,7.9,nopark); box(2.2,0.05,0.12,0xF2C230,-17.6,0.06,10.1,nopark); box(0.12,0.05,2.2,0xF2C230,-16.5,0.06,9,nopark);
+for(let i=0;i<5;i++){const t=box(1.2,0.05,0.1,0xF2C230,-18.4+i*0.42,0.065,9,nopark);t.rotation.y=0.8;}
+const truck=grp(); box(4,1.7,2,0xE6E9EC,-0.6,1.35,0,truck); box(1.4,1.4,1.9,0x1565C0,2,1.1,0,truck); box(0.05,0.6,1.6,0x8fc1e3,2.71,1.4,0,truck);
+[[-2,-0.95],[-2,0.95],[-0.4,-0.95],[-0.4,0.95],[2,-0.95],[2,0.95]].forEach(([x,z])=>{wheel(x,0.42,z,0.42,0.3,truck);});
+truck.rotation.y=Math.PI/2; T(truck,[-17.4,9.2],[-14.6,12]);
+
+curS=-1;
+// ---------- UI ----------
+const pinsEl=document.getElementById("pins"),chipsEl=document.getElementById("chips"),detail=document.getElementById("detail"),dotsEl=document.getElementById("dots");
+const dots=S.map(()=>{const i=document.createElement("i");dotsEl.appendChild(i);return i;});
+const pins=S.map((s,i)=>{const b=document.createElement("button");b.className="pin";b.textContent=i+1;b.setAttribute("aria-label",`${i+1}. ${s.name}`);b.onclick=()=>select(i);pinsEl.appendChild(b);return b;});
+const chips=S.map((s,i)=>{const b=document.createElement("button");b.className="chip";b.innerHTML=`<span class="n">${i+1}</span>${SHORT[i]}`;b.setAttribute("aria-label",`${i+1}. ${s.name}`);b.onclick=()=>select(i);chipsEl.appendChild(b);return b;});
+const esc=t=>t.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const li=a=>`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+
+let insp=null;
+const sm=i=>insp?(insp.fixed.has(i)?"fix":"haz"):mode;
+function applyMode(){
+  showIn.haz.forEach(o=>o.visible=sm(o.userData.s)==="haz"); showIn.fix.forEach(o=>o.visible=sm(o.userData.s)==="fix");
+  document.getElementById("btnHaz").setAttribute("aria-pressed",mode==="haz");
+  document.getElementById("btnFix").setAttribute("aria-pressed",mode==="fix");
+  pins.forEach((p,i)=>p.classList.toggle("fixed",sm(i)==="fix")); chips.forEach((c,i)=>c.classList.toggle("fixed",sm(i)==="fix"));
+  render();
+}
+let camGoal=null;
+function fly(t,c){camGoal={t:new THREE.Vector3(...t),c:new THREE.Vector3(...c)};}
+function select(i){
+  if(insp)return;
+  current=i; seen.add(i);
+  pins.forEach((p,k)=>{p.classList.toggle("active",k===i);p.classList.toggle("seen",seen.has(k));});
+  chips.forEach((c,k)=>{c.setAttribute("aria-current",k===i);c.classList.toggle("seen",seen.has(k));});
+  dots.forEach((d,k)=>d.classList.toggle("on",seen.has(k))); document.getElementById("seenN").textContent=seen.size;
+  const s=S[i]; fly([s.pos[0],0.5,s.pos[2]],[s.pos[0]+s.cam[0],s.cam[1],s.pos[2]+s.cam[2]]);
+  render();
+}
+function render(){
+  if(insp)return renderInsp();
+  const prev=document.getElementById("prev"),next=document.getElementById("next");
+  prev.disabled=current<=0; prev.style.visibility=current<0?"hidden":"visible";
+  next.textContent=current<0?"Start tour":current===S.length-1?"Back to whole site":"Next near miss";
+  if(current<0){
+    detail.innerHTML=`<div class="intro"><span class="tag">Practical demonstration</span><h2>Spot the near miss</h2>
+    <p>This site has eight near misses waiting to happen. Look around the site first and try to find them all before you tap a number.</p>
+    <ol><li><b>Spot it:</b> find what is wrong on the site</li><li><b>Report it:</b> tell your supervisor or HSE in the same shift</li><li><b>Fix it:</b> switch to “Show fixes” to see the control in place</li></ol>
+    <p style="margin-top:4px">Or press <b>Inspection walk</b> to follow Sabir, HSE Officer, as he inspects the site, corrects each near miss and records it on ADOSH-SF Form G2.</p><div class="legend"><span class="d" style="background:var(--orange)"></span><span>Near miss to find</span><span class="d" style="background:var(--safe)"></span><span>Control in place (Show fixes)</span><span class="d" style="background:#fff;box-shadow:inset 0 0 0 3px var(--navy)"></span><span>Already looked at</span></div></div>`;
+    return;
+  }
+  const s=S[current],fix=mode==="fix";
+  detail.innerHTML=`<div class="tagrow"><span class="tag">${current+1} of 8 · ${esc(s.tag)}</span><span class="pill ${fix?"ok":""}">${fix?"Fixed":"Near miss"}</span>${fix?"":`<span class="pill sev">${esc(s.sev)}</span>`}</div>
+  <h2>${esc(s.name)}</h2>
+  ${fix?`<div class="box safe"><p class="lbl">Controls now in place</p>${li(s.fix)}</div><div class="sec"><p class="lbl">The near miss was</p><p>${esc(s.hap)}</p></div>`
+  :`<div class="box risk"><p class="lbl">What happened</p><p>${esc(s.hap)}</p></div>
+  <div class="sec"><p class="lbl">Could have been</p><p>${esc(s.could)}</p></div>
+  <div class="sec"><p class="lbl">Why it happened</p>${li(s.why)}</div>
+  <div class="box safe"><p class="lbl">How to prevent it</p>${li(s.fix)}</div>`}
+  <div class="sec"><p class="lbl">Report it</p><p>Stop and make safe, then tell your supervisor or HSE in the same shift. A photo is enough. HSE records it on ADOSH-SF Form G2.</p></div>
+  <div class="ask"><b>Ask the group</b>${esc(s.ask)}</div>`;
+}
+document.getElementById("btnHaz").onclick=()=>{if(insp)inspEnd(false);mode="haz";applyMode();};
+document.getElementById("btnFix").onclick=()=>{if(insp)inspEnd(false);mode="fix";applyMode();};
+document.getElementById("next").onclick=()=>{if(insp)return inspNextBtn();if(current===S.length-1){home();}else select(current+1);};
+document.getElementById("prev").onclick=()=>{if(insp)return inspEnd(true);if(current>0)select(current-1);};
+function home(){current=-1;pins.forEach(p=>p.classList.remove("active"));chips.forEach(c=>c.setAttribute("aria-current",false));fly([0,0,0],[-24,28,32]);render();}
+document.getElementById("reset").onclick=()=>{if(insp)inspEnd(false);home();};
+// ---------- inspection walk: Sabir visits each near miss, corrects it and records it ----------
+const SB_HOME=[15.6,-5.3,-0.35];
+const ROUTE=[
+ {path:[[-7.0,-5.2]],face:[-9.6,-5.6]},
+ {path:[[4.75,-5.2],[4.75,0.6],[2.0,1.8],[-2.0,1.8],[-2.4,0.4]],face:[-6.3,5.6]},
+ {path:[[-2.0,1.8],[2.0,1.8],[2.2,0.6],[8.4,0.8]],face:[8,5]},
+ {path:[[5.6,0.5],[3.0,0.9]],face:[3.4,4]},
+ {path:[[5.6,0.5],[11.2,0.5]],face:[13.4,3.9]},
+ {path:[[4.75,0.6],[4.75,-5.2],[-4.2,-5.2]],face:[-6,-2.4]},
+ {path:[[-12.8,-5.2],[-12.8,0.6],[-14.4,1.2],[-14.2,5.4]],face:[-10.5,5.6]},
+ {path:[[-15.2,7.4]],face:[-19.2,9]}];
+const ZONE=["the benched excavation","the excavator and cable trench","the shored trench","the crane lift","the plant area","the site road","the cable trench","the fire point and first aid station"];
+let walkPh=0, faceTo=null;
+function inspStart(){insp={i:0,phase:"walk",fixed:new Set(),path:[]};sabir.position.set(SB_HOME[0],0,SB_HOME[1]);sabir.rotation.y=SB_HOME[2];
+  current=-1;pins.forEach(p=>p.classList.remove("active"));applyMode();inspGo(0);}
+function inspGo(i){insp.i=i;insp.phase="walk";insp.path=ROUTE[i].path.map(p=>p.slice());faceTo=null;
+  pins.forEach((p,k)=>p.classList.toggle("active",k===i));chips.forEach((c,k)=>c.setAttribute("aria-current",k===i));
+  if(reduce){const q=insp.path[insp.path.length-1];sabir.position.set(q[0],0,q[1]);insp.path=[];inspArrive();}else renderInsp();}
+function inspArrive(){const i=insp.i,s=S[i],f=ROUTE[i].face;insp.phase="found";faceTo=Math.atan2(f[0]-sabir.position.x,f[1]-sabir.position.z);
+  seen.add(i);dots.forEach((d,k)=>d.classList.toggle("on",seen.has(k)));document.getElementById("seenN").textContent=seen.size;
+  pins.forEach((p,k)=>p.classList.toggle("seen",seen.has(k)));chips.forEach((c,k)=>c.classList.toggle("seen",seen.has(k)));
+  const mx=(sabir.position.x+s.pos[0])/2,mz=(sabir.position.z+s.pos[2])/2;fly([mx,0.8,mz],[mx+s.cam[0]*0.95,s.cam[1]*0.95,mz+s.cam[2]*0.95]);renderInsp();}
+function inspNextBtn(){if(insp.phase==="walk"){const q=insp.path[insp.path.length-1];if(q){sabir.position.set(q[0],0,q[1]);insp.path=[];inspArrive();}return;}
+  if(insp.phase==="found"){insp.fixed.add(insp.i);insp.phase="fixed";applyMode();return;}
+  if(insp.phase==="fixed"){if(insp.i<S.length-1)inspGo(insp.i+1);else{insp.phase="done";fly([0,0,0],[-24,28,32]);renderInsp();}return;}
+  inspEnd(true);}
+function inspEnd(goHome){insp=null;faceTo=null;sabir.position.set(SB_HOME[0],0,SB_HOME[1]);sabir.rotation.y=SB_HOME[2];
+  sabir.userData.legs.forEach(l=>l.rotation.x=0);applyMode();if(goHome)home();}
+function inspStep(dt){
+  const lg=sabir.userData.legs, arm=sabir.userData.arm;
+  if(insp&&insp.phase==="walk"&&insp.path.length){
+    const [tx,tz]=insp.path[0],dx=tx-sabir.position.x,dz=tz-sabir.position.z,d=Math.hypot(dx,dz);
+    if(d<0.03){insp.path.shift();if(!insp.path.length)inspArrive();}
+    else{const st=Math.min(d,dt*2.4*(window.WALK||1));sabir.position.x+=dx/d*st;sabir.position.z+=dz/d*st;walkPh+=st*4.2;
+      let a=Math.atan2(dx,dz)-sabir.rotation.y;a=Math.atan2(Math.sin(a),Math.cos(a));sabir.rotation.y+=a*Math.min(1,dt*8);
+      lg[0].rotation.x=Math.sin(walkPh)*0.5;lg[1].rotation.x=-Math.sin(walkPh)*0.5;arm.rotation.x=-0.15+Math.sin(walkPh)*0.3;
+      const x=sabir.position.x,z=sabir.position.z;camGoal={t:new THREE.Vector3(x,1.2,z),c:new THREE.Vector3(x+5,7.5,z+8)};}
+  }else{lg.forEach(l=>l.rotation.x*=0.85);arm.rotation.x+=(-0.15-arm.rotation.x)*0.15;
+    if(faceTo!=null){let a=faceTo-sabir.rotation.y;a=Math.atan2(Math.sin(a),Math.cos(a));sabir.rotation.y+=a*Math.min(1,dt*6);}}
+}
+const tdl=(rows,who=true)=>`<table class="act">${rows.map(r=>`<tr><td>${esc(r[0])}</td>${who?`<td class="who">${esc(r[1])}${r[2]?`<br>${esc(r[2])}`:""}</td>`:""}</tr>`).join("")}</table>`;
+function renderInsp(){
+  const prev=document.getElementById("prev"),next=document.getElementById("next");
+  prev.disabled=false;prev.style.visibility="visible";prev.textContent="End inspection";
+  const who=`<div class="who-card"><span>Inspected by <b>Sabir Amin, HSE Officer</b> · 20/10/2026</span></div>`;
+  if(insp.phase==="done"){next.textContent="Back to whole site";
+    detail.innerHTML=`<div class="tagrow"><span class="tag">Site inspection · complete</span><span class="pill ok">8 of 8 closed</span></div><h2>Inspection summary</h2>${who}
+    <p class="sub" style="font-size:13px;color:var(--muted);margin:0 0 10px">Eight near misses identified, made safe, corrected and recorded on ADOSH-SF Form G2 as per Mechanism 11.0.</p>
+    <table class="act">${INSP.map(r=>`<tr><td><b>${r.n}.</b> ${esc(r.title)}<br><span style="color:var(--muted);font-size:12px">${esc(r.ref)} · ${esc(r.time)}</span></td><td class="who">Residual risk: ${esc(r.risk.level)}<br>Closed</td></tr>`).join("")}</table>
+    <div class="ask" style="margin-top:12px"><b>Remember</b>See it. Report it. Prevent it. A near miss reported today is an injury prevented tomorrow.</div>`;return;}
+  const r=INSP[insp.i],s=S[insp.i];
+  const head=(pill,cls)=>`<div class="tagrow"><span class="tag">Site inspection · stop ${insp.i+1} of 8</span><span class="pill ${cls}">${pill}</span></div>`;
+  if(insp.phase==="walk"){next.textContent="Skip walk";
+    detail.innerHTML=`${head("Walking","sev")}<h2>Walking to ${esc(ZONE[insp.i])}</h2>${who}
+    <div class="sec"><p class="lbl">What Sabir checks on the way</p><ul><li>Uses the pedestrian route and zebra crossings</li><li>Keeps out of plant swing and lift zones</li><li>Looks for unsafe acts and unsafe conditions</li></ul></div>`;return;}
+  if(insp.phase==="found"){next.textContent="Correct it";
+    detail.innerHTML=`${head("Near miss identified","")}<h2>${esc(r.title)}</h2>${who}
+    <div class="box risk"><p class="lbl">Observed at ${esc(r.time)} · ${esc(r.location)}</p><p>${esc(r.observed)}</p></div>
+    <dl class="kv"><dt>Hazard type</dt><dd>${esc(r.category)}</dd><dt>Form G2 incident type</dt><dd>Near-miss</dd><dt>Could have been</dt><dd>${esc(r.potential)}</dd>
+    <dt>Unsafe act</dt><dd>${esc(r.unsafe_acts.join("; "))}</dd><dt>Unsafe condition</dt><dd>${esc(r.unsafe_conditions.join("; "))}</dd>
+    <dt>Root cause (personal)</dt><dd>${esc(r.root_personal.join("; "))}</dd><dt>Root cause (system)</dt><dd>${esc(r.root_system.join("; "))}</dd></dl>
+    <div class="ask"><b>First action</b>Stop the work and make the area safe before anything else.</div>`;return;}
+  next.textContent=insp.i<S.length-1?"Walk to next near miss":"Finish inspection";
+  detail.innerHTML=`${head("Corrected","ok")}<h2>${esc(r.title)}</h2>${who}
+  <div class="box safe"><p class="lbl">Immediate actions taken</p>${tdl(r.immediate_actions)}</div>
+  <div class="sec"><p class="lbl">Procedure to follow</p>${li(r.procedure)}</div>
+  <div class="sec"><p class="lbl">Root causes</p>${li(r.root_causes)}</div>
+  <div class="sec"><p class="lbl">Corrective actions to prevent recurrence</p>${tdl(r.corrective_actions)}</div>
+  <div class="g2"><p class="lbl">ADOSH-SF Form G2 record (sample)</p><p class="sub">Recorded as per Mechanism 11.0 · for training</p>
+   <dl class="kv"><dt>Report no.</dt><dd>${esc(r.ref)}</dd><dt>Date and time</dt><dd>20/10/2026 · ${esc(r.time)}</dd><dt>Incident type</dt><dd>☒ Near-miss</dd>
+   <dt>Location on site</dt><dd>${esc(r.location)}</dd><dt>Description</dt><dd>${esc(r.description)}</dd><dt>Injured person</dt><dd>None (N/A)</dd>
+   <dt>Residual risk</dt><dd><div class="risk3"><span>Probability: ${esc(r.risk.probability)}</span><span>Severity: ${esc(r.risk.severity)}</span><span>Level: ${esc(r.risk.level)}</span></div></dd>
+   <dt>Status</dt><dd>Closed – Completed</dd><dt>Reported by</dt><dd>Sabir Amin, HSE Officer</dd></dl></div>`;
+}
+document.getElementById("inspBtn").onclick=()=>{if(insp)inspEnd(false);inspStart();};
+
+document.getElementById("meet").onclick=()=>fly([15.6,1.9,-5.3],[14.7,2.5,-2.7]);
+
+function resize(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/Math.max(r.height,1);camera.fov=camera.aspect<1?58:40;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(stage); resize();
+controls.addEventListener("start",()=>{camGoal=null;});
+
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const v=new THREE.Vector3();
+(function loop(){
+  requestAnimationFrame(loop);
+  const k=reduce?1:0.08, t=performance.now()/1000; const dt=Math.min(0.05,t-(loop.t||t)); loop.t=t;
+  inspStep(dt);
+  tween.forEach(q=>{const to=q[sm(q.s)];q.o.position.x+=(to[0]-q.o.position.x)*k;q.o.position.z+=(to[1]-q.o.position.z)*k;});
+  if(camGoal){controls.target.lerp(camGoal.t,k);camera.position.lerp(camGoal.c,k);if(camera.position.distanceTo(camGoal.c)<0.05)camGoal=null;}
+  if(!reduce){
+    house.rotation.y=sm(1)==="haz"?Math.sin(t*0.6)*0.5:0;
+    sabir.userData.head.rotation.y=Math.sin(t*0.4)*0.35;
+    bp.rotation.z+=((sm(6)==="fix"?-0.35:0.55)-bp.rotation.z)*0.08;
+    loadG.rotation.y=sm(3)==="haz"?Math.sin(t*0.9)*0.35:0;
+    dump.userData.beacon.material.emissive=new THREE.Color(Math.sin(t*8)>0?0xFF8F00:0x000000);
+  }
+  controls.update(); renderer.render(scene,camera);
+  const r=stage.getBoundingClientRect();
+  S.forEach((s,i)=>{v.set(...s.pos).project(camera);const p=pins[i];p.style.display=v.z<1?"grid":"none";p.style.left=((v.x+1)/2*r.width)+"px";p.style.top=((1-v.y)/2*r.height)+"px";});
+})();
+applyMode();
+</script>
