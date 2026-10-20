@@ -107,7 +107,8 @@ li+li{margin-top:2px}
 <main>
   <div id="stage">
     <div id="pins"></div>
-    <div class="stagebar"><span class="hint">Drag to rotate · scroll or pinch to zoom · right-drag to pan · tap a number</span><button class="reset" id="reset">Whole site</button><button class="reset" id="meet">HSE officer</button><button class="reset go" id="inspBtn">Inspection walk</button></div>
+    <div id="loader" style="position:absolute;inset:0;display:grid;place-items:center;background:#EEF2F5;color:#13293D;font:600 15px var(--body);z-index:5;transition:opacity .4s">Loading the 3D site…</div>
+    <div class="stagebar"><span class="hint">Drag to rotate · scroll or pinch to zoom · right-drag to pan · tap a number</span><button class="reset" id="reset">Whole site</button><button class="reset" id="meet">HSE officer</button><button class="reset go" id="inspBtn">Inspection walk</button><button class="reset" id="fsBtn" title="Full screen (F)">Full screen</button></div>
   </div>
   <aside>
     <div class="detail" id="detail" aria-live="polite"></div>
@@ -179,12 +180,14 @@ const stage=document.getElementById("stage");
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 stage.prepend(renderer.domElement);
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0xDCE6EE); scene.fog=new THREE.Fog(0xDCE6EE,70,140);
+const scene=new THREE.Scene(); scene.fog=new THREE.Fog(0xDCE6EE,80,170);
+{const c=document.createElement("canvas");c.width=4;c.height=256;const g=c.getContext("2d"),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#9CC3E4");gr.addColorStop(0.55,"#D4E3EE");gr.addColorStop(1,"#EEE6D6");g.fillStyle=gr;g.fillRect(0,0,4,256);scene.background=new THREE.CanvasTexture(c);}
+
 const camera=new THREE.PerspectiveCamera(40,1,0.1,400);
 const HOME={c:new THREE.Vector3(-24,28,32),t:new THREE.Vector3(0,0,0)};
 camera.position.copy(HOME.c);
 const controls=new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true; controls.maxPolarAngle=1.38; controls.minDistance=6; controls.maxDistance=85;
+controls.enableDamping=true; controls.maxPolarAngle=1.38; controls.minDistance=6; controls.maxDistance=110;
 scene.add(new THREE.HemisphereLight(0xffffff,0xa9b6c2,0.7));
 const sun=new THREE.DirectionalLight(0xfff6e8,0.85); sun.position.set(-22,42,16); sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-30,right:30,top:30,bottom:-30,far:120}); sun.shadow.bias=-0.0005;
@@ -234,15 +237,28 @@ curS=-1;
 // ---------- workers ----------
 function worker({x=0,z=0,ry=0,vest=0xD7E52B,suit=0x2E5C8A,hat=0xffffff,arm=0}={}){
   const g=grp(x,0,z); g.rotation.y=ry;
-  box(0.18,0.8,0.22,suit,-0.12,0.4,0,g); box(0.18,0.8,0.22,suit,0.12,0.4,0,g);
-  box(0.2,0.1,0.32,0x2b2b2b,-0.12,0.05,0.05,g); box(0.2,0.1,0.32,0x2b2b2b,0.12,0.05,0.05,g);
-  box(0.56,0.7,0.34,vest,0,1.15,0,g);
-  [0.95,1.25].forEach(y=>box(0.58,0.05,0.36,0xE6E9EC,0,y,0,g,{metalness:.6,roughness:.3}));
-  const la=grp(-0.36,1.45,0,g), ra=grp(0.36,1.45,0,g);
-  box(0.14,0.62,0.16,suit,0,-0.3,0,la); box(0.14,0.62,0.16,suit,0,-0.3,0,ra); ra.rotation.z=arm; la.rotation.x=0.15;
-  sph(0.18,0xA0694A,0,1.7,0,g);
-  const h=new THREE.Mesh(new THREE.SphereGeometry(0.22,16,8,0,Math.PI*2,0,Math.PI/2),M(hat));h.position.y=1.76;h.castShadow=true;g.add(h);
-  cyl(0.27,0.27,0.03,hat,0,1.77,0.03,g);
+  const skin=[0xB57A55,0x8D5A3B,0xC99572,0x6E4630][(worker.n=(worker.n||0)+1)%4];
+  // legs: coverall trousers with reflective bands, safety boots
+  g.userData.legs=[-0.12,0.12].map(lx=>{const lg=grp(lx,0.86,0,g);
+    cyl(0.095,0.085,0.74,suit,0,-0.38,0,lg,12); cyl(0.097,0.092,0.045,0xE6E9EC,0,-0.55,0,lg,12);
+    box(0.19,0.12,0.3,0x2b2b2b,0,-0.8,0.04,lg); box(0.2,0.03,0.32,0x111111,0,-0.85,0.04,lg); return lg;});
+  // coverall body, hi-vis vest with reflective strips
+  const t=cyl(0.25,0.22,0.64,suit,0,1.16,0,g,16); t.scale.z=0.66;
+  const v=cyl(0.268,0.24,0.5,vest,0,1.22,0,g,16); v.scale.z=0.7;
+  [1.08,1.3].forEach(y=>{const s=cyl(0.272,0.27,0.045,0xE6E9EC,0,y,0,g,16);s.scale.z=0.71;});
+  box(0.04,0.46,0.01,0x9aa3ab,0,1.22,0.17,g);
+  const sh=sph(0.25,vest,0,1.45,0,g); sh.scale.set(1,0.32,0.68);
+  // arms on shoulder pivots, gloves
+  const la=grp(-0.32,1.42,0,g), ra=grp(0.32,1.42,0,g);
+  [la,ra].forEach(a=>{sph(0.08,suit,0,0,0,a); cyl(0.07,0.06,0.54,suit,0,-0.29,0,a,10); cyl(0.071,0.071,0.04,0xE6E9EC,0,-0.4,0,a,10); sph(0.058,0xE8C33A,0,-0.6,0,a);});
+  ra.rotation.z=arm||-0.08; la.rotation.x=0.15; la.rotation.z=0.08;
+  // head with face, ears, hard hat
+  cyl(0.07,0.08,0.1,skin,0,1.55,0,g,10);
+  const h=grp(0,1.72,0,g); const hd=sph(0.155,skin,0,0,0,h); hd.scale.set(0.95,1.1,1);
+  [-1,1].forEach(sx=>{box(0.032,0.026,0.02,0x1a1a1a,sx*0.052,0.03,0.142,h);sph(0.028,skin,sx*0.15,0,0,h).scale.set(0.5,1,0.8);});
+  sph(0.024,skin,0,-0.015,0.155,h);
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(0.19,18,8,0,Math.PI*2,0,Math.PI/2),M(hat));dome.position.y=0.06;dome.scale.y=0.85;dome.castShadow=true;h.add(dome);
+  const brim=cyl(0.225,0.225,0.02,hat,0,0.065,0.03,h,20); brim.scale.z=1.1; box(0.03,0.035,0.3,hat,0,0.21,0,h);
   return g;
 }
 function cone(x,z,p=scene){const g=grp(x,0,z,p);box(0.5,0.05,0.5,0x222222,0,0.025,0,g);const c=new THREE.Mesh(new THREE.ConeGeometry(0.2,0.7,14),M(0xE8772E));c.position.y=0.38;c.castShadow=true;g.add(c);cyl(0.13,0.15,0.1,0xffffff,0,0.42,0,g);return g;}
@@ -305,6 +321,80 @@ signPost(10.8,1.8,0.3,"danger",["DANGER","Open trench"]);
 signPost(-13.2,3.6,0,"warning",["DANGER","Buried","services"]);
 signPost(-1.6,-6.4,0,"safe",["ASSEMBLY","POINT"]);
 signPost(17.2,-6.4,0,"mandatory",["SITE OFFICE","Report all","near misses"]);
+
+const flagMeshes=[];
+// ---------- surroundings and site facilities ----------
+(function surroundings(){
+  // noise textures so sand, asphalt and gravel don't read as flat plastic
+  const noise=(key,base,spread,specks)=>tex(key,(c,W,H)=>{c.fillStyle=base;c.fillRect(0,0,W,H);const d=c.getImageData(0,0,W,H),p=d.data;
+    for(let i=0;i<p.length;i+=4){const n=(Math.random()-0.5)*spread;p[i]+=n;p[i+1]+=n;p[i+2]+=n;}c.putImageData(d,0,0);
+    for(let i=0;i<specks;i++){c.fillStyle=`rgba(0,0,0,${Math.random()*0.08})`;c.fillRect(Math.random()*W,Math.random()*H,2+Math.random()*3,2+Math.random()*3);}},256,256);
+  const tile=(t,rep)=>{t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep,rep);return t;};
+  const sandT=noise("sandN","#E3D6BC",22,500); sandT.wrapS=sandT.wrapT=THREE.RepeatWrapping;
+  const roadT=noise("roadN","#2f3438",26,900); roadT.wrapS=roadT.wrapT=THREE.RepeatWrapping;
+  // re-skin site ground and roads with world-scaled UVs
+  scene.traverse(o=>{if(!o.isMesh||!o.geometry||o.geometry.type!=="BoxGeometry")return;const m=o.material;if(!m||!m.color)return;
+    const hex=m.color.getHex(); if(hex!==SAND&&hex!==ROAD)return; const pr=o.geometry.parameters; if(pr.width<2&&pr.depth<2)return;
+    const g=o.geometry.clone(),uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*pr.width/4,uv.getY(i)*pr.depth/4);o.geometry=g;
+    o.material=hex===SAND?(mats.sandT||(mats.sandT=new THREE.MeshStandardMaterial({map:sandT,roughness:.95}))):(mats.roadT||(mats.roadT=new THREE.MeshStandardMaterial({map:roadT,roughness:.9})));});
+  // desert outside the hoarding
+  const des=new THREE.Mesh(new THREE.PlaneGeometry(260,260),new THREE.MeshStandardMaterial({map:tile(noise("desN","#CBC2AE",14,300).clone(),60),roughness:1}));
+  des.material.map.needsUpdate=true; des.rotation.x=-Math.PI/2; des.position.y=-0.02; des.receiveShadow=true; scene.add(des);
+  // public road and kerb along the south side
+  box(80,0.04,6,0x3a3f44,0,0.0,20.5); box(80,0.12,0.3,0xBFC6CC,0,0.06,17.3); box(80,0.12,0.3,0xBFC6CC,0,0.06,23.7);
+  for(let i=-38;i<40;i+=4)box(2,0.05,0.15,0xffffff,i,0.03,20.5);
+  // palms
+  function palm(x,z,h){const g=grp(x,0,z);for(let i=0;i<6;i++){const s=cyl(0.2-i*0.015,0.22-i*0.015,h/6,0x8B6B4A,Math.sin(i)*0.05,h/12+i*h/6,0,g,8);}
+    for(let k=0;k<7;k++){const f=grp(0,h,0,g);f.rotation.y=k/7*Math.PI*2;const l=box(0.5,0.05,2.2,0x3E7D3A,0,0,1.0,f);l.rotation.x=0.45;}return g;}
+  [[-26,-18],[-14,-19],[0,-19],[14,-19],[27,-18],[-26,0],[27,2],[-24,16],[26,16]].forEach(([x,z],i)=>palm(x,z,4.2+(i%3)*0.6));
+  // distant skyline
+  for(let i=0;i<26;i++){const w=4+((i*37)%6),h=8+((i*53)%26),x=-70+i*5.6;box(w*1.4,h*1.3,5,[0xC9D6E2,0xBFCEDB,0xD3DEE8][i%3],x*1.6,h*0.65,-112-((i*17)%10));}
+})();
+
+// assembly area marking and project board
+const asm=grp(-3.8,0.035,-9.6); box(4.6,0.02,3.2,0x2E7D4F,0,0,0,asm); box(4.2,0.025,2.8,0x3FA066,0,0.005,0,asm);
+board(1.2,0.5,["ASSEMBLY","AREA"],"#2E7D4F","#fff",0,0.03,0,asm).rotation.x=-Math.PI/2;
+(function projectBoard(){const g=grp(-4.2,0,-13.9);
+  [-2.2,2.2].forEach(x=>{cyl(0.08,0.08,4,0x9aa3ab,x,2,0,g);});
+  const t=tex("projBoard",(c,W,H)=>{c.fillStyle="#fff";c.fillRect(0,0,W,H);c.fillStyle="#13293D";c.fillRect(0,0,W,96);
+    c.fillStyle="#fff";c.font="bold 54px Arial";c.textAlign="left";c.fillText("TAQA",30,66);c.font="600 26px Arial";c.fillStyle="#7FC6EA";c.fillText("Water Solutions",190,64);
+    c.textAlign="right";c.fillStyle="#fff";c.font="600 24px Arial";c.fillText("Contract O-16124",W-30,62);
+    c.textAlign="left";c.fillStyle="#13293D";c.font="bold 34px Arial";c.fillText("Water network construction works",30,150);
+    c.font="24px Arial";c.fillStyle="#4A5563";
+    [["Client","TAQA Water Solutions"],["Contractor","Hydropower Energy & General Construction LLC"],["HSE Officer","Sabir Amin"],["Emergency","999  ·  Site first aid: site office"]].forEach(([k,v],i)=>{c.fillStyle="#B5520F";c.font="bold 22px Arial";c.fillText(k.toUpperCase(),30,200+i*44);c.fillStyle="#13293D";c.font="24px Arial";c.fillText(v,220,200+i*44);});
+    c.fillStyle="#2E7D4F";c.fillRect(30,H-118,W-60,88);c.fillStyle="#fff";c.font="bold 30px Arial";c.textAlign="center";c.fillText("SEE IT · REPORT IT · PREVENT IT",W/2,H-80);c.font="22px Arial";c.fillText("Report every near miss to your supervisor or HSE in the same shift",W/2,H-48);
+    c.fillStyle="#E8772E";c.fillRect(0,H-12,W,12);},1024,560);
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(4.6,2.5),new THREE.MeshStandardMaterial({map:t,roughness:.6}));m.position.set(0,2.55,0.06);g.add(m);box(4.7,2.6,0.1,0x13293D,0,2.55,0,g);})();
+
+// north-east corner: generator, bunded fuel tank, extinguisher
+(function utilities(){const g=grp(18.2,0,-12.6);
+  box(2.6,1.3,1.1,0xF2C230,0,0.75,0,g); box(2.4,0.15,1.0,0x3a3a3a,0,1.45,0,g); cyl(0.06,0.06,0.5,0x555555,0.9,1.7,0.2,g,8);
+  box(0.9,0.2,0.04,0x13293D,-0.6,0.95,0.56,g);
+  const b=grp(0,0,2.4,g); box(2.4,0.35,1.6,0xBFC6CC,0,0.18,0,b); box(2.2,0.36,1.4,0x8a9299,0,0.19,0,b);
+  const tk=cyl(0.5,0.5,1.8,0xE6E9EC,0,0.85,0,b,18); tk.rotation.z=Math.PI/2;
+  board(0.9,0.32,["DIESEL","No smoking"],"#C62828","#fff",0,1.05,0.82,b);
+  cyl(0.12,0.12,0.5,0xD32F2F,1.4,0.25,0.9,g,12);})();
+
+// south strip: pipe laydown on sleepers, segregated waste skips
+(function laydown(){const g=grp(-8.6,0,13.2);
+  [-1.6,0,1.6].forEach(x=>box(0.25,0.15,2.4,0x7a5a3a,x,0.08,0,g));
+  for(let r=0;r<3;r++)for(let i=0;i<4-r;i++){const p=cyl(0.28,0.28,4.2,0x4D5B66,0,0.44+r*0.5,-0.9+i*0.6+r*0.3,g,14);p.rotation.z=Math.PI/2;}
+  [[-2.6,-0.9],[2.6,-0.9],[-2.6,0.9],[2.6,0.9]].forEach(([x,z])=>cone(x,z,g));
+  const sk=grp(6.4,0,13.4);[["GENERAL","#13293D",0x13293D],["METAL","#6b7680",0x6b7680],["WOOD","#8B5A2B",0x8B5A2B]].forEach(([n,css,c],i)=>{
+    const s=grp(-2.3+i*2.3,0,0,sk); box(2,0.9,1.2,c,0,0.5,0,s); box(2.1,0.08,1.3,0x222222,0,0.96,0,s); board(1.0,0.32,[n],css,"#fff",0,0.6,0.61,s);});})();
+
+// flags and wind sock in the north-west corner
+(function flags(){const g=grp(-18.6,0,-13.4);
+  const flag=(x,draw,key)=>{cyl(0.04,0.05,5,0xDADFE3,x,2.5,0,g,8);const t=tex(key,draw,192,128);const m=new THREE.Mesh(new THREE.PlaneGeometry(1.2,0.8),new THREE.MeshStandardMaterial({map:t,side:THREE.DoubleSide}));m.position.set(x+0.62,4.5,0);g.add(m);m.userData.flag=true;flagMeshes.push(m);};
+  flag(0,(c,W,H)=>{c.fillStyle="#00732F";c.fillRect(0,0,W,H/3);c.fillStyle="#fff";c.fillRect(0,H/3,W,H/3);c.fillStyle="#000";c.fillRect(0,2*H/3,W,H/3);c.fillStyle="#FF0000";c.fillRect(0,0,W/4,H);},"flagUAE");
+  flag(1.6,(c,W,H)=>{c.fillStyle="#13293D";c.fillRect(0,0,W,H);c.fillStyle="#fff";c.font="bold 44px Arial";c.textAlign="center";c.fillText("TAQA",W/2,H*0.55);c.fillStyle="#7FC6EA";c.font="18px Arial";c.fillText("Water Solutions",W/2,H*0.8);},"flagTAQA");
+  flag(3.2,(c,W,H)=>{c.fillStyle="#fff";c.fillRect(0,0,W,H);c.fillStyle="#E8772E";c.fillRect(0,H-16,W,16);c.fillStyle="#13293D";c.font="bold 24px Arial";c.textAlign="center";c.fillText("HYDROPOWER",W/2,H*0.42);c.font="16px Arial";c.fillText("Energy & General",W/2,H*0.62);c.fillText("Construction",W/2,H*0.76);},"flagHPE");
+  cyl(0.04,0.05,4,0xDADFE3,5.2,2,0.6,g,8);const ws=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.1,1.1,12,1,true),new THREE.MeshStandardMaterial({color:0xE8772E,side:THREE.DoubleSide}));ws.rotation.z=Math.PI/2;ws.position.set(5.75,3.85,0.6);g.add(ws);
+})();
+
+// lighting towers
+[[-19,6],[19,-7],[10,13.5]].forEach(([x,z])=>{const g=grp(x,0,z);box(1.2,0.6,2,0xF2C230,0,0.5,0,g);cyl(0.06,0.08,5,0x9aa3ab,0,3,0,g,8);
+  [-0.35,0.35].forEach(dx=>{box(0.5,0.35,0.12,0x2b2f33,dx,5.4,0,g);box(0.42,0.27,0.02,0xFFF7D6,dx,5.4,0.07,g,{emissive:0xFFF2B8,emissiveIntensity:0.6});});});
 
 // ---------- Sabir, HSE officer, beside the site office ----------
 function hseOfficer(x,z,ry){const g=grp(x,0,z);g.rotation.y=ry;g.scale.setScalar(1.12);
@@ -392,6 +482,19 @@ const bp=grp(-1.1,1.0,-0.3,house); bp.rotation.z=0.55;
 box(3.2,0.4,0.4,0xF2C230,-1.6,0,0,bp); const sp=grp(-3.2,0,0,bp); sp.rotation.z=-1.7; box(2.2,0.3,0.3,0xF2C230,-1.1,0,0,sp);
 const bk=grp(-2.2,0,0,sp); bk.rotation.z=0.6; box(0.7,0.6,0.8,0x3a3a3a,-0.3,0,0,bk);
 beam([-1.0,1.6,-0.3],[-2.2,2.4,-0.3],0.07,0xC0C7CC,house);
+// excavator detail: track rollers and grousers, slew ring, cab frame, handrail, exhaust, boom rams, bucket teeth
+[-0.9,0.9].forEach(z=>{for(let i=0;i<5;i++){const r=cyl(0.12,0.12,0.64,0x555a60,-1.0+i*0.5,0.12,z,exc,10);r.rotation.x=Math.PI/2;}
+  for(let i=0;i<14;i++)box(0.06,0.05,0.62,0x2a2c2f,-1.65+i*0.25,0.64,z,exc);});
+cyl(0.85,0.85,0.18,0x2b2f33,0,0.68,0,exc,24);
+box(2.62,0.08,2.02,0x2b2f33,0.2,1.08,0,house); box(0.6,0.05,2.02,0x2b2f33,1.4,0.92,0,house);
+[[-0.97,0.07],[-0.03,0.07],[-0.97,0.93],[-0.03,0.93]].forEach(([x,z])=>box(0.06,1.1,0.06,0x2b2f33,x,1.6,z,house));
+box(1.08,0.06,0.98,0x2b2f33,-0.5,2.18,0.5,house);
+cyl(0.05,0.05,0.5,0x333333,1.1,1.3,-0.6,house,8);
+[0.3,1.3].forEach(x=>box(0.04,0.3,0.04,0xF2C230,x,1.22,-0.95,house)); box(1.04,0.04,0.04,0xF2C230,0.8,1.37,-0.95,house);
+board(0.5,0.18,["CAT 320"],"#F2C230","#111",0.9,0.75,1.01,house);
+[[-0.6,-0.12],[-0.6,0.12]].forEach(([x,z])=>{const r=cyl(0.07,0.07,1.5,0xC0C7CC,-1.0,0.2,z,bp,8);r.rotation.z=Math.PI/2;});
+const ram2=cyl(0.06,0.06,1.4,0xC0C7CC,-0.9,0.28,0,sp,8); ram2.rotation.z=Math.PI/2;
+for(let i=0;i<4;i++)box(0.12,0.08,0.1,0x9aa3ab,-0.66,-0.32,-0.3+i*0.2,bk);
 const w2=worker({ry:Math.PI/2}); T(w2,[-6.4,7.6],[-2.6,11.2]);
 const ring=onlyIn("haz",new THREE.Mesh(new THREE.RingGeometry(4.6,4.95,64),new THREE.MeshBasicMaterial({color:0xE8772E,side:THREE.DoubleSide,transparent:true,opacity:.7})));
 ring.rotation.x=-Math.PI/2; ring.position.set(-6.3,0.09,5.6); scene.add(ring);
@@ -618,6 +721,14 @@ function renderInsp(){
    <dt>Residual risk</dt><dd><div class="risk3"><span>Probability: ${esc(r.risk.probability)}</span><span>Severity: ${esc(r.risk.severity)}</span><span>Level: ${esc(r.risk.level)}</span></div></dd>
    <dt>Status</dt><dd>Closed – Completed</dd><dt>Reported by</dt><dd>Sabir Amin, HSE Officer</dd></dl></div>`;
 }
+document.getElementById("fsBtn").onclick=()=>{const el=document.documentElement;if(document.fullscreenElement)document.exitFullscreen();else if(el.requestFullscreen)el.requestFullscreen();};
+// presenter keys: arrows step through, I starts the inspection walk, H shows the whole site, F toggles full screen
+addEventListener("keydown",e=>{if(e.target.closest&&e.target.closest("input,textarea,select"))return;
+  if(e.key==="ArrowRight"||e.key==="PageDown"){document.getElementById("next").click();e.preventDefault();}
+  else if(e.key==="ArrowLeft"||e.key==="PageUp"){const b=document.getElementById("prev");if(!b.disabled&&b.style.visibility!=="hidden")b.click();e.preventDefault();}
+  else if(e.key==="i"||e.key==="I")document.getElementById("inspBtn").click();
+  else if(e.key==="h"||e.key==="H")document.getElementById("reset").click();
+  else if(e.key==="f"||e.key==="F")document.getElementById("fsBtn").click();});
 document.getElementById("inspBtn").onclick=()=>{if(insp)inspEnd(false);inspStart();};
 
 document.getElementById("meet").onclick=()=>fly([15.6,1.9,-5.3],[14.7,2.5,-2.7]);
@@ -636,12 +747,14 @@ const v=new THREE.Vector3();
   if(camGoal){controls.target.lerp(camGoal.t,k);camera.position.lerp(camGoal.c,k);if(camera.position.distanceTo(camGoal.c)<0.05)camGoal=null;}
   if(!reduce){
     house.rotation.y=sm(1)==="haz"?Math.sin(t*0.6)*0.5:0;
+    flagMeshes.forEach((m,i)=>{m.rotation.y=Math.sin(t*1.6+i)*0.25;});
     sabir.userData.head.rotation.y=Math.sin(t*0.4)*0.35;
     bp.rotation.z+=((sm(6)==="fix"?-0.35:0.55)-bp.rotation.z)*0.08;
     loadG.rotation.y=sm(3)==="haz"?Math.sin(t*0.9)*0.35:0;
     dump.userData.beacon.material.emissive=new THREE.Color(Math.sin(t*8)>0?0xFF8F00:0x000000);
   }
   controls.update(); renderer.render(scene,camera);
+  if(!loop.shown){loop.shown=1;const l=document.getElementById("loader");l.style.opacity=0;setTimeout(()=>l.remove(),450);}
   const r=stage.getBoundingClientRect();
   S.forEach((s,i)=>{v.set(...s.pos).project(camera);const p=pins[i];p.style.display=v.z<1?"grid":"none";p.style.left=((v.x+1)/2*r.width)+"px";p.style.top=((1-v.y)/2*r.height)+"px";});
 })();
