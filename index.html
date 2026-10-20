@@ -338,8 +338,10 @@ const flagMeshes=[];
     const g=o.geometry.clone(),uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*pr.width/4,uv.getY(i)*pr.depth/4);o.geometry=g;
     o.material=hex===SAND?(mats.sandT||(mats.sandT=new THREE.MeshStandardMaterial({map:sandT,roughness:.95}))):(mats.roadT||(mats.roadT=new THREE.MeshStandardMaterial({map:roadT,roughness:.9})));});
   // desert outside the hoarding
-  const des=new THREE.Mesh(new THREE.PlaneGeometry(260,260),new THREE.MeshStandardMaterial({map:tile(noise("desN","#CBC2AE",14,300).clone(),60),roughness:1}));
-  des.material.map.needsUpdate=true; des.rotation.x=-Math.PI/2; des.position.y=-0.02; des.receiveShadow=true; scene.add(des);
+  // four strips around the site so the desert never covers the excavations
+  const desM=new THREE.MeshStandardMaterial({map:tile(noise("desN","#CBC2AE",14,300).clone(),60),roughness:1}); desM.map.needsUpdate=true;
+  [[0,-72.5,260,115],[0,72.5,260,115],[-75,0,110,30],[75,0,110,30]].forEach(([x,z,w,d])=>{const m=desM.clone();m.map=desM.map.clone();m.map.needsUpdate=true;m.map.repeat.set(60*w/260,60*d/260);
+    const des=new THREE.Mesh(new THREE.PlaneGeometry(w,d),m);des.rotation.x=-Math.PI/2;des.position.set(x,-0.02,z);des.receiveShadow=true;scene.add(des);});
   // public road and kerb along the south side
   box(80,0.04,6,0x3a3f44,0,0.0,20.5); box(80,0.12,0.3,0xBFC6CC,0,0.06,17.3); box(80,0.12,0.3,0xBFC6CC,0,0.06,23.7);
   for(let i=-38;i<40;i+=4)box(2,0.05,0.15,0xffffff,i,0.03,20.5);
