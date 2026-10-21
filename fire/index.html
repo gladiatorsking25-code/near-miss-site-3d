@@ -108,7 +108,7 @@ li+li{margin-top:2px}
   <div id="stage">
     <div id="pins"></div>
     <div id="loader" style="position:absolute;inset:0;display:grid;place-items:center;background:#EEF2F5;color:#13293D;font:600 15px var(--body);z-index:5;transition:opacity .4s">Loading the 3D site…</div>
-    <div class="stagebar"><span class="hint">Drag to rotate · scroll or pinch to zoom · right-drag to pan · tap a number</span><button class="reset" id="reset">Whole site</button><button class="reset" id="meet">HSE officer</button><button class="reset go" id="inspBtn">Inspection walk</button><button class="reset" id="fsBtn" title="Full screen (F)">Full screen</button></div>
+    <div class="stagebar"><span class="hint">Drag to rotate · scroll or pinch to zoom · right-drag to pan · tap a number</span><button class="reset" id="reset">Whole site</button><button class="reset" id="meet">HSE officer</button><button class="reset go" id="inspBtn">Inspection walk</button><button class="reset go" id="sndBtn" aria-pressed="false" title="Construction site sound (S)">Sound off</button><button class="reset" id="fsBtn" title="Full screen (F)">Full screen</button></div>
   </div>
   <aside>
     <div class="detail" id="detail" aria-live="polite"></div>
@@ -900,6 +900,7 @@ function select(i){
   pins.forEach((p,k)=>{p.classList.toggle("active",k===i);p.classList.toggle("seen",seen.has(k));});
   chips.forEach((c,k)=>{c.setAttribute("aria-current",k===i);c.classList.toggle("seen",seen.has(k));});
   dots.forEach((d,k)=>d.classList.toggle("on",seen.has(k))); document.getElementById("seenN").textContent=seen.size;
+  if(i===7)sndHorn();
   const s=S[i]; fly([s.pos[0],0.5,s.pos[2]],[s.pos[0]+s.cam[0],s.cam[1],s.pos[2]+s.cam[2]]);
   render();
 }
@@ -1030,6 +1031,46 @@ function fireAnim(t){
   glowFx.forEach((m,i)=>{m.material.emissiveIntensity=0.9+0.6*Math.sin(t*7+i*2);});
   gen.position.y=sm(1)==="haz"?Math.abs(Math.sin(t*47))*0.01:0;
 }
+// ---------- site sound (Web Audio, generated, no files) ----------
+const SND={ctx:null,on:false,src:[]};
+function sndInit(){
+  const C=new (window.AudioContext||window.webkitAudioContext)(); SND.ctx=C;
+  const master=C.createGain(); master.gain.value=0.9; master.connect(C.destination); SND.master=master;
+  const noiseBuf=(()=>{const b=C.createBuffer(1,C.sampleRate*2,C.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;})();
+  const noise=()=>{const n=C.createBufferSource();n.buffer=noiseBuf;n.loop=true;n.start();return n;};
+  const src=(pos,maxv,build,active)=>{const g=C.createGain();g.gain.value=0;g.connect(master);build(g);SND.src.push({pos:new THREE.Vector3(...pos),g,maxv,active:active||(()=>true)});};
+  // wind / distant traffic bed
+  src([0,0,0],0.10,g=>{const f=C.createBiquadFilter();f.type="lowpass";f.frequency.value=380;noise().connect(f);f.connect(g);},()=>true);
+  // excavator diesel
+  src([-6.3,1,5.6],0.28,g=>{const o=C.createOscillator();o.type="sawtooth";o.frequency.value=38;const f=C.createBiquadFilter();f.type="lowpass";f.frequency.value=220;o.connect(f);const n=noise(),nf=C.createBiquadFilter();nf.type="bandpass";nf.frequency.value=160;nf.Q.value=0.8;const ng=C.createGain();ng.gain.value=0.5;n.connect(nf);nf.connect(ng);ng.connect(f);
+    const lfo=C.createOscillator();lfo.frequency.value=0.35;const lg=C.createGain();lg.gain.value=9;lfo.connect(lg);lg.connect(o.frequency);lfo.start();f.connect(g);o.start();});
+  // generator (silent when its fix is shown: engine off)
+  src([17.8,1,-12],0.25,g=>{const o=C.createOscillator();o.type="square";o.frequency.value=50;const f=C.createBiquadFilter();f.type="lowpass";f.frequency.value=300;const h=C.createOscillator();h.type="sawtooth";h.frequency.value=100;const hg=C.createGain();hg.gain.value=0.3;h.connect(hg);hg.connect(f);o.connect(f);f.connect(g);o.start();h.start();},()=>sm(1)==="haz");
+  // welding / cutting crackle at hot work (only while the hazard is shown)
+  src([-17.6,1,-8],0.35,g=>{const n=noise(),f=C.createBiquadFilter();f.type="highpass";f.frequency.value=2500;const am=C.createGain();am.gain.value=0;n.connect(f);f.connect(am);am.connect(g);
+    (function crack(){if(!SND.ctx)return;const t=C.currentTime;am.gain.setValueAtTime(Math.random()<0.7?0.9:0.2,t);am.gain.setTargetAtTime(0.15,t+0.02,0.03);setTimeout(crack,30+Math.random()*90);})();},()=>sm(0)==="haz");
+  // hammer clanks around the site
+  const clank=C.createGain();clank.connect(master);
+  SND.src.push({pos:new THREE.Vector3(2,1,9),g:clank,maxv:0.22,active:()=>true});
+  (function hit(){if(!SND.ctx)return;const t=C.currentTime;[1,2.76,5.4].forEach((m,i)=>{const o=C.createOscillator(),e=C.createGain();o.frequency.value=420*m;o.type="sine";e.gain.setValueAtTime(0.5/(i+1),t);e.gain.exponentialRampToValueAtTime(0.001,t+0.35);o.connect(e);e.connect(clank);o.start(t);o.stop(t+0.4);});setTimeout(hit,(Math.random()<0.5?450:1800)+Math.random()*2500);})();
+  // dumper reversing beeper
+  const beep=C.createGain();beep.connect(master);
+  SND.src.push({pos:new THREE.Vector3(12.6,1,6.6),g:beep,maxv:0.12,active:()=>true});
+  (function bp(){if(!SND.ctx)return;const t=C.currentTime;for(let i=0;i<6;i++){const o=C.createOscillator(),e=C.createGain();o.frequency.value=1050;o.type="square";e.gain.setValueAtTime(0,t+i*0.9);e.gain.linearRampToValueAtTime(0.3,t+i*0.9+0.01);e.gain.setValueAtTime(0.3,t+i*0.9+0.45);e.gain.linearRampToValueAtTime(0,t+i*0.9+0.47);o.connect(e);e.connect(beep);o.start(t+i*0.9);o.stop(t+i*0.9+0.5);}setTimeout(bp,14000+Math.random()*12000);})();
+}
+// air horn alarm: three long blasts (used when the assembly-point hazard is opened)
+function sndHorn(){if(!SND.on)return;const C=SND.ctx,t=C.currentTime;for(let i=0;i<3;i++){[311,415].forEach(fq=>{const o=C.createOscillator(),e=C.createGain();o.type="sawtooth";o.frequency.value=fq;e.gain.setValueAtTime(0,t+i*1.4);e.gain.linearRampToValueAtTime(0.12,t+i*1.4+0.05);e.gain.setValueAtTime(0.12,t+i*1.4+1.0);e.gain.linearRampToValueAtTime(0,t+i*1.4+1.1);o.connect(e);e.connect(SND.master);o.start(t+i*1.4);o.stop(t+i*1.4+1.2);});}}
+function sndUpdate(){
+  if(!SND.on)return; const C=SND.ctx, ear=controls.target.clone().lerp(camera.position,0.35);
+  SND.src.forEach(s=>{const d=ear.distanceTo(s.pos);const v=s.active()?s.maxv/(1+Math.pow(d/9,2)):0;s.g.gain.setTargetAtTime(s.pos.lengthSq()===0?s.maxv:v,C.currentTime,0.15);});
+}
+function sndToggle(){
+  if(!SND.ctx)sndInit();
+  SND.on=!SND.on; if(SND.on)SND.ctx.resume(); else SND.ctx.suspend();
+  const b=document.getElementById("sndBtn"); b.textContent=SND.on?"Sound on":"Sound off"; b.setAttribute("aria-pressed",SND.on);
+}
+document.getElementById("sndBtn").onclick=sndToggle;
+
 (function loop(){
   requestAnimationFrame(loop);
   const k=reduce?1:0.08, t=performance.now()/1000; const dt=Math.min(0.05,t-(loop.t||t)); loop.t=t;
@@ -1042,10 +1083,11 @@ function fireAnim(t){
     sabir.userData.head.rotation.y=Math.sin(t*0.4)*0.35;
     dump.userData.beacon.material.emissive=new THREE.Color(Math.sin(t*8)>0?0xFF8F00:0x000000);
   }
-  controls.update(); renderer.render(scene,camera);
+  sndUpdate(); controls.update(); renderer.render(scene,camera);
   if(!loop.shown){loop.shown=1;const l=document.getElementById("loader");l.style.opacity=0;setTimeout(()=>l.remove(),450);}
   const r=stage.getBoundingClientRect();
   S.forEach((s,i)=>{v.set(...s.pos).project(camera);const p=pins[i];p.style.display=v.z<1?"grid":"none";p.style.left=((v.x+1)/2*r.width)+"px";p.style.top=((1-v.y)/2*r.height)+"px";});
 })();
 applyMode();
+document.addEventListener("keydown",e=>{if((e.key==="s"||e.key==="S")&&!e.ctrlKey&&!e.metaKey&&e.target.tagName!=="INPUT")sndToggle();});
 </script>
