@@ -1,3 +1,6 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fire Safety Site 3D</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,6 +71,7 @@ li+li{margin-top:2px}
 .risk3{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 0}.risk3 span{font-size:12px;background:var(--paper);border-radius:6px;padding:3px 8px;color:var(--navy)}
 .who-card{display:flex;gap:10px;align-items:center;margin:0 0 12px;font-size:13px;color:var(--muted)}.who-card b{color:var(--navy)}
 .reset.go{background:var(--navy);color:#fff;border-color:var(--navy)}
+#sndBtn[aria-pressed="true"]{background:var(--orange);color:#fff;border-color:var(--orange)}
 .intro p{font-size:14px;line-height:1.55;color:var(--muted);margin:0 0 10px}
 .intro ol{margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.6;color:var(--navy)}
 .legend{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:13px;color:var(--muted);align-items:center}
@@ -108,7 +112,7 @@ li+li{margin-top:2px}
   <div id="stage">
     <div id="pins"></div>
     <div id="loader" style="position:absolute;inset:0;display:grid;place-items:center;background:#EEF2F5;color:#13293D;font:600 15px var(--body);z-index:5;transition:opacity .4s">Loading the 3D site…</div>
-    <div class="stagebar"><span class="hint">Drag to rotate · scroll or pinch to zoom · right-drag to pan · tap a number</span><button class="reset" id="reset">Whole site</button><button class="reset" id="meet">HSE officer</button><button class="reset go" id="inspBtn">Inspection walk</button><button class="reset" id="fsBtn" title="Full screen (F)">Full screen</button></div>
+    <div class="stagebar"><span class="hint">Drag to rotate · scroll or pinch to zoom · right-drag to pan · tap a number</span><button class="reset" id="reset">Whole site</button><button class="reset" id="meet">HSE officer</button><button class="reset go" id="inspBtn">Inspection walk</button><button class="reset" id="fsBtn" title="Full screen (F)">Full screen</button><button class="reset" id="sndBtn" aria-pressed="false" title="Site sound (S)">Sound off</button></div>
   </div>
   <aside>
     <div class="detail" id="detail" aria-live="polite"></div>
@@ -133,7 +137,7 @@ const INSP=[
  corrective_actions:[["No hot work without a signed permit; permit board at every hot work spot.","Site Engineer",D2],["Pre-start check of a 10 m radius added to the hot work permit.","Site Supervisor",D2],["Toolbox talk on hot work, fire watch and PASS for welders and helpers.","HSE Officer",D2]],
  procedure:["Hot work permit before any cutting, welding or grinding.","Clear or cover combustibles within about 10 m; fire blanket under the job.","Charged extinguisher at the job and a trained fire watch during the work and for 60 minutes after.","Report the hazard to the supervisor or HSE in the same shift."],
  risk:{probability:"Rare",severity:"Major",level:"Moderate"},
- description:"On 21/10/2026 at 08:10, during a planned HSE fire safety inspection of the pipe preparation area (Zone A), hot work was found taking place next to combustible waste without a permit, extinguisher or fire watch. No fire occurred. Work was stopped and the area made safe immediately."},
+ description:"At 08:10, during a planned HSE fire safety inspection of the pipe preparation area (Zone A), hot work was found taking place next to combustible waste without a permit, extinguisher or fire watch. No fire occurred. Work was stopped and the area made safe immediately."},
 {n:2,ref:"16124-FS-SAMPLE-02",time:"08:25",title:"Generator refuelled while running",category:"Fire – flammable liquid near hot surface",location:"Generator, north-east corner (Zone B)",
  observed:"A worker was pouring diesel from a jerry can into the generator while the engine was running. No funnel was used and fuel had spilled onto the engine and the ground. No extinguisher was at the generator.",
  potential:"Spilled fuel igniting on the hot exhaust; burns to the worker and fire at the generator.",
@@ -144,7 +148,7 @@ const INSP=[
  corrective_actions:[["Refuelling procedure (engine off, cool down, funnel, drip tray) posted at each generator.","Plant Foreman",D2],["Spill kit and extinguisher added to the generator pre-use checklist.","Site Supervisor",D2],["Refuelling only by named, briefed persons.","Site Engineer",D3]],
  procedure:["Switch off and let the engine cool before refuelling.","Use a funnel; generator kept on a drip tray; spill kit nearby.","Dry powder extinguisher beside the generator; no smoking or naked flames.","Clean any spill straight away and report it."],
  risk:{probability:"Rare",severity:"Major",level:"Moderate"},
- description:"On 21/10/2026 at 08:25, during a planned HSE fire safety inspection, a generator (Zone B) was found being refuelled while running, with fuel spilled on the engine and ground. No fire occurred. Refuelling was stopped and the spill cleaned up."},
+ description:"At 08:25, during a planned HSE fire safety inspection, a generator (Zone B) was found being refuelled while running, with fuel spilled on the engine and ground. No fire occurred. Refuelling was stopped and the spill cleaned up."},
 {n:3,ref:"16124-FS-SAMPLE-03",time:"08:40",title:"Fuel drums stored next to the site office",category:"Fire – flammable liquid storage",location:"West end of the site office (Zone C)",
  observed:"Diesel drums and jerry cans were left beside the site office wall. One drum was on its side and leaking. There was no bund, no sign and no extinguisher.",
  potential:"Fire at the office wall, spreading into the office and blocking the way out.",
@@ -155,7 +159,7 @@ const INSP=[
  corrective_actions:[["Permanent bunded, shaded fuel store set up and shown on the site layout.","Site Engineer",D3],["Fuel deliveries received only at the store by the storekeeper.","Logistics Supervisor",D2],["Flammable storage added to the daily HSE inspection checklist.","HSE Officer",D2]],
  procedure:["Fuel kept only in the bunded store, at least 6 m from offices and welfare cabins.","Drums upright with caps closed; bund kept clean and dry.","Signs and a dry powder extinguisher at the store.","Daily check of the store and of any leak."],
  risk:{probability:"Unlikely",severity:"Major",level:"Moderate"},
- description:"On 21/10/2026 at 08:40, during a planned HSE fire safety inspection, diesel drums and jerry cans were found stored loose against the site office (Zone C), one leaking. No fire occurred. The fuel was moved to a bunded store."},
+ description:"At 08:40, during a planned HSE fire safety inspection, diesel drums and jerry cans were found stored loose against the site office (Zone C), one leaking. No fire occurred. The fuel was moved to a bunded store."},
 {n:4,ref:"16124-FS-SAMPLE-04",time:"08:55",title:"Gas cylinders lying on the ground",category:"Fire and explosion – compressed gases",location:"Plant area, east side (Zone D)",
  observed:"Oxygen and acetylene cylinders were lying together on the ground with tangled hoses. One hose was split and repaired with tape. No flashback arrestors were fitted.",
  potential:"Gas leak igniting, flashback into the cylinder or a cylinder explosion.",
@@ -166,7 +170,7 @@ const INSP=[
  corrective_actions:[["Cylinder cage with separate oxygen and fuel gas bays installed.","Site Engineer",D3],["Pre-use check of hoses, regulators and arrestors added to the hot work permit.","Site Supervisor",D2],["Toolbox talk on cylinder storage, leak testing with soapy water and flashback.","HSE Officer",D2]],
  procedure:["Cylinders upright and chained, in a ventilated cage or on a trolley.","Oxygen kept apart from fuel gases in storage (6 m or a fire wall).","Flashback arrestors at the regulators and the torch.","Check hoses before every use; replace damaged hoses, never tape them."],
  risk:{probability:"Rare",severity:"Catastrophic",level:"Moderate"},
- description:"On 21/10/2026 at 08:55, during a planned HSE fire safety inspection of the plant area (Zone D), oxygen and acetylene cylinders were found lying on the ground with a damaged, taped hose and no flashback arrestors. No leak or fire occurred. The cylinders were secured in the cage."},
+ description:"At 08:55, during a planned HSE fire safety inspection of the plant area (Zone D), oxygen and acetylene cylinders were found lying on the ground with a damaged, taped hose and no flashback arrestors. No leak or fire occurred. The cylinders were secured in the cage."},
 {n:5,ref:"16124-FS-SAMPLE-05",time:"09:10",title:"Overloaded extension leads at the site office",category:"Fire – electrical overheating",location:"Front of the site office (Zone E)",
  observed:"One wall socket fed a cable reel and two full multi-plug strips. A damaged cable with bare wires lay across the walkway. The strip showed signs of heat.",
  potential:"Overheating and fire at the office; electric shock to a passer-by.",
@@ -177,7 +181,7 @@ const INSP=[
  corrective_actions:[["Temporary electrical installation designed and installed by a competent electrician.","Site Engineer",D3],["Monthly inspection and colour tagging of portable cables and tools.","Site Electrician",D4],["Daisy-chaining of multi-plug strips banned; briefed to all office staff.","HSE Officer",D2]],
  procedure:["Temporary power only from distribution boards with RCD protection.","One plug per socket; no daisy-chained strips.","Cables on stands or in protective covers, clear of walkways and water.","Repairs only by a competent electrician; inspect and tag regularly."],
  risk:{probability:"Unlikely",severity:"Major",level:"Moderate"},
- description:"On 21/10/2026 at 09:10, during a planned HSE fire safety inspection, the site office power supply (Zone E) was found overloaded through a reel and two multi-plug strips, with a damaged cable on the ground. No fire or injury occurred. The supply was isolated."},
+ description:"At 09:10, during a planned HSE fire safety inspection, the site office power supply (Zone E) was found overloaded through a reel and two multi-plug strips, with a damaged cable on the ground. No fire or injury occurred. The supply was isolated."},
 {n:6,ref:"16124-FS-SAMPLE-06",time:"09:25",title:"Smoking beside primer tins and waste",category:"Fire – smoking and housekeeping",location:"Pipe jointing area, west of the trench (Zone F)",
  observed:"A worker was smoking next to open tins of bitumen primer and a loose pile of cardboard, plastic and timber offcuts.",
  potential:"Primer vapour or waste igniting, with fire spreading across the work area.",
@@ -188,7 +192,7 @@ const INSP=[
  corrective_actions:[["Designated smoking area with sand bucket set up away from materials.","Site Supervisor",D2],["End-of-task housekeeping added to the daily work plan.","Site Engineer",D2],["Toolbox talk on smoking rules and flammable products.","HSE Officer",D2]],
  procedure:["Smoking only in designated smoking areas.","Waste in metal skips with lids, emptied regularly.","Flammable products closed and kept in the flammables cabinet.","NO SMOKING signs where flammable materials are used."],
  risk:{probability:"Unlikely",severity:"Moderate",level:"Moderate"},
- description:"On 21/10/2026 at 09:25, during a planned HSE fire safety inspection (Zone F), a worker was found smoking beside open bitumen primer tins and a pile of combustible waste. No fire occurred. The cigarette was put out and the area cleared."},
+ description:"At 09:25, during a planned HSE fire safety inspection (Zone F), a worker was found smoking beside open bitumen primer tins and a pile of combustible waste. No fire occurred. The cigarette was put out and the area cleared."},
 {n:7,ref:"16124-FS-SAMPLE-07",time:"09:40",title:"Fire point and escape route blocked",category:"Emergency preparedness – blocked fire point and exit",location:"Fire point and emergency exit gate, south-west corner (Zone G)",
  observed:"Pallets, blocks and rebar were stacked in front of the fire point and across the route to the emergency exit gate. The extinguishers were missing from the fire point.",
  potential:"Delay in fighting a fire or escaping, with people trapped.",
@@ -199,7 +203,7 @@ const INSP=[
  corrective_actions:[["Escape routes and keep-clear boxes painted and shown on the emergency plan.","Site Engineer",D3],["Monthly extinguisher inspection with tags; any use reported at once.","HSE Officer",D4],["Fire points and exits added to the daily HSE inspection checklist.","HSE Officer",D2]],
  procedure:["Fire points and escape routes kept clear at all times.","Each fire point: dry powder and CO2 extinguishers, air horn and sign.","Monthly extinguisher checks; PASS briefed to all workers.","Emergency exits signed and unlocked during working hours."],
  risk:{probability:"Unlikely",severity:"Major",level:"Moderate"},
- description:"On 21/10/2026 at 09:40, during a planned HSE fire safety inspection, the fire point and route to the emergency exit (Zone G) were found blocked by materials, and the extinguishers were missing. No emergency occurred. The route was cleared and the fire point re-equipped."},
+ description:"At 09:40, during a planned HSE fire safety inspection, the fire point and route to the emergency exit (Zone G) were found blocked by materials, and the extinguishers were missing. No emergency occurred. The route was cleared and the fire point re-equipped."},
 {n:8,ref:"16124-FS-SAMPLE-08",time:"09:55",title:"No assembly point sign or head count",category:"Emergency preparedness – evacuation and head count",location:"Assembly area, west side (Zone H)",
  observed:"During an unannounced evacuation drill the workers did not know where to go. There was no assembly point sign and no one counted heads.",
  potential:"A missing worker not found during a real fire; rescuers put at risk.",
@@ -210,7 +214,7 @@ const INSP=[
  corrective_actions:[["Fire wardens named for each work area and trained.","Site Engineer",D2],["Emergency plan and assembly point added to the site induction.","HSE Officer",D2],["Evacuation drill with head count every three months; results recorded.","HSE Officer",D4]],
  procedure:["On the alarm: stop work, make safe and walk to the assembly point.","Do not run, do not go back for belongings.","Supervisors count heads against the attendance list and report to the fire warden.","Call Civil Defence 997, Ambulance 998, Police 999."],
  risk:{probability:"Unlikely",severity:"Major",level:"Moderate"},
- description:"On 21/10/2026 at 09:55, during an evacuation drill held as part of the HSE fire safety inspection (Zone H), workers did not know where to assemble and no head count was taken. No one was hurt. The assembly point was signed and a head count completed."}];
+ description:"At 09:55, during an evacuation drill held as part of the HSE fire safety inspection (Zone H), workers did not know where to assemble and no head count was taken. No one was hurt. The assembly point was signed and a head count completed."}];
 const SHORT=["Hot work","Refuel","Fuel store","Cylinders","Electrics","Smoking","Fire point","Assembly"];
 const S=[
  {tag:"Hot work",name:"Cutting a pipe next to waste",sev:"Potential: fire, burns",pos:[-17.6,1.4,-8.0],cam:[6.5,6,4.5],
@@ -912,7 +916,7 @@ function render(){
     detail.innerHTML=`<div class="intro"><span class="tag">Practical demonstration · Fire safety</span><h2>Spot the fire hazard</h2>
     <p>This site has eight fire hazards. Look around the site first and try to find them all before you tap a number. In a fire: raise the alarm, call Civil Defence <b>997</b>, and go to the assembly point.</p>
     <ol><li><b>Spot it:</b> find what is wrong on the site</li><li><b>Report it:</b> stop the work, make it safe and tell your supervisor or HSE</li><li><b>Fix it:</b> switch to “Show fixes” to see the control in place</li></ol>
-    <p style="margin-top:4px">Or press <b>Inspection walk</b> to follow Sabir, HSE Officer, as he walks to each fire hazard, identifies it, corrects it and records it (sample ADOSH-SF Form G2).</p><div class="legend"><span class="d" style="background:var(--orange)"></span><span>Fire hazard to find</span><span class="d" style="background:var(--safe)"></span><span>Control in place (Show fixes)</span><span class="d" style="background:#fff;box-shadow:inset 0 0 0 3px var(--navy)"></span><span>Already looked at</span></div></div>`;
+    <p style="margin-top:4px">Or press <b>Inspection walk</b> to follow Sabir, HSE Officer, as he walks to each fire hazard, identifies it, corrects it and records it (sample ADOSH-SF Form G2). Press <b>Sound</b> to hear the site: every hazard makes its own noise until it is fixed.</p><div class="legend"><span class="d" style="background:var(--orange)"></span><span>Fire hazard to find</span><span class="d" style="background:var(--safe)"></span><span>Control in place (Show fixes)</span><span class="d" style="background:#fff;box-shadow:inset 0 0 0 3px var(--navy)"></span><span>Already looked at</span></div></div>`;
     return;
   }
   const s=S[current],fix=mode==="fix";
@@ -955,7 +959,7 @@ function inspArrive(){const i=insp.i,s=S[i],f=ROUTE[i].face;insp.phase="found";f
   pins.forEach((p,k)=>p.classList.toggle("seen",seen.has(k)));chips.forEach((c,k)=>c.classList.toggle("seen",seen.has(k)));
   const mx=(sabir.position.x+s.pos[0])/2,mz=(sabir.position.z+s.pos[2])/2;fly([mx,0.8,mz],[mx+s.cam[0]*0.95,s.cam[1]*0.95,mz+s.cam[2]*0.95]);renderInsp();}
 function inspNextBtn(){if(insp.phase==="walk"){const q=insp.path[insp.path.length-1];if(q){sabir.position.set(q[0],0,q[1]);insp.path=[];inspArrive();}return;}
-  if(insp.phase==="found"){insp.fixed.add(insp.i);insp.phase="fixed";applyMode();return;}
+  if(insp.phase==="found"){insp.fixed.add(insp.i);insp.phase="fixed";applyMode();sfx.ding();return;}
   if(insp.phase==="fixed"){if(insp.i<S.length-1)inspGo(insp.i+1);else{insp.phase="done";fly([0,0,0],[-24,28,32]);renderInsp();}return;}
   inspEnd(true);}
 function inspEnd(goHome){insp=null;faceTo=null;sabir.position.set(SB_HOME[0],0,SB_HOME[1]);sabir.rotation.y=SB_HOME[2];
@@ -972,11 +976,11 @@ function inspStep(dt){
   }else{lg.forEach(l=>l.rotation.x*=0.85);arm.rotation.x+=(-0.15-arm.rotation.x)*0.15;
     if(faceTo!=null){let a=faceTo-sabir.rotation.y;a=Math.atan2(Math.sin(a),Math.cos(a));sabir.rotation.y+=a*Math.min(1,dt*6);}}
 }
-const tdl=(rows,who=true)=>`<table class="act">${rows.map(r=>`<tr><td>${esc(r[0])}</td>${who?`<td class="who">${esc(r[1])}${r[2]?`<br>${esc(r[2])}`:""}</td>`:""}</tr>`).join("")}</table>`;
+const tdl=(rows,who=true)=>`<table class="act">${rows.map(r=>`<tr><td>${esc(r[0])}</td>${who?`<td class="who">${esc(r[1])}</td>`:""}</tr>`).join("")}</table>`;
 function renderInsp(){
   const prev=document.getElementById("prev"),next=document.getElementById("next");
   prev.disabled=false;prev.style.visibility="visible";prev.textContent="End inspection";
-  const who=`<div class="who-card"><span>Inspected by <b>Sabir Amin, HSE Officer</b> · 21/10/2026</span></div>`;
+  const who=`<div class="who-card"><span>Inspected by <b>Sabir Amin, HSE Officer</b></span></div>`;
   if(insp.phase==="done"){next.textContent="Back to whole site";
     detail.innerHTML=`<div class="tagrow"><span class="tag">Site inspection · complete</span><span class="pill ok">8 of 8 closed</span></div><h2>Inspection summary</h2>${who}
     <p class="sub" style="font-size:13px;color:var(--muted);margin:0 0 10px">Eight fire hazards identified, made safe, corrected and recorded. Sample records on ADOSH-SF Form G2, for training.</p>
@@ -1001,7 +1005,7 @@ function renderInsp(){
   <div class="sec"><p class="lbl">Root causes</p>${li(r.root_causes)}</div>
   <div class="sec"><p class="lbl">Corrective actions to prevent recurrence</p>${tdl(r.corrective_actions)}</div>
   <div class="g2"><p class="lbl">ADOSH-SF Form G2 record (sample)</p><p class="sub">Recorded as per Mechanism 11.0 · for training</p>
-   <dl class="kv"><dt>Report no.</dt><dd>${esc(r.ref)}</dd><dt>Date and time</dt><dd>21/10/2026 · ${esc(r.time)}</dd><dt>Incident type</dt><dd>☒ Near-miss (unsafe condition)</dd>
+   <dl class="kv"><dt>Report no.</dt><dd>${esc(r.ref)}</dd><dt>Time</dt><dd>${esc(r.time)}</dd><dt>Incident type</dt><dd>☒ Near-miss (unsafe condition)</dd>
    <dt>Location on site</dt><dd>${esc(r.location)}</dd><dt>Description</dt><dd>${esc(r.description)}</dd><dt>Injured person</dt><dd>None (N/A)</dd>
    <dt>Residual risk</dt><dd><div class="risk3"><span>Probability: ${esc(r.risk.probability)}</span><span>Severity: ${esc(r.risk.severity)}</span><span>Level: ${esc(r.risk.level)}</span></div></dd>
    <dt>Status</dt><dd>Closed – Completed</dd><dt>Reported by</dt><dd>Sabir Amin, HSE Officer</dd></dl></div>`;
@@ -1013,7 +1017,8 @@ addEventListener("keydown",e=>{if(e.target.closest&&e.target.closest("input,text
   else if(e.key==="ArrowLeft"||e.key==="PageUp"){const b=document.getElementById("prev");if(!b.disabled&&b.style.visibility!=="hidden")b.click();e.preventDefault();}
   else if(e.key==="i"||e.key==="I")document.getElementById("inspBtn").click();
   else if(e.key==="h"||e.key==="H")document.getElementById("reset").click();
-  else if(e.key==="f"||e.key==="F")document.getElementById("fsBtn").click();});
+  else if(e.key==="f"||e.key==="F")document.getElementById("fsBtn").click();
+  else if(e.key==="s"||e.key==="S")document.getElementById("sndBtn").click();});
 document.getElementById("inspBtn").onclick=()=>{if(insp)inspEnd(false);inspStart();};
 
 document.getElementById("meet").onclick=()=>fly([15.6,1.9,-5.3],[14.7,2.5,-2.7]);
@@ -1030,16 +1035,149 @@ function fireAnim(t){
   glowFx.forEach((m,i)=>{m.material.emissiveIntensity=0.9+0.6*Math.sin(t*7+i*2);});
   gen.position.y=sm(1)==="haz"?Math.abs(Math.sin(t*47))*0.01:0;
 }
+// ---------- traffic on the public road: cars come and go in both lanes ----------
+function roadCar(col){const g=grp();box(1.8,0.6,3.8,col,0,0.7,0,g);box(1.7,0.6,2,0x2b2f33,0,1.3,0.1,g,{metalness:.3,roughness:.2});
+  [[-0.9,-1.3],[0.9,-1.3],[-0.9,1.3],[0.9,1.3]].forEach(([x,z])=>{const w=wheel(x,0.38,z,0.38,0.3,g);w.rotation.set(0,0,Math.PI/2);});g.visible=false;return g;}
+const cars=[[0xffffff,19.3,1],[0xC62828,21.7,-1],[0x2E5C8A,19.3,1]].map(([c,lane,dir])=>({m:roadCar(c),lane,dir,x:0,v:0,wait:1+Math.random()*6}));
+function trafficStep(dt){cars.forEach(c=>{if(c.wait>0){c.wait-=dt;if(c.wait<=0){c.x=-46*c.dir;c.v=9+Math.random()*5;c.m.visible=true;c.m.rotation.y=c.dir*Math.PI/2;}return;}
+  c.x+=c.dir*c.v*dt;if(Math.abs(c.x)>46){c.wait=3+Math.random()*9;c.m.visible=false;}c.m.position.set(c.x,0,c.lane);});}
+// ---------- site sound: synthesised with Web Audio (no files) and placed in 3D. Engines are modelled cylinder by cylinder, steel rings
+// with its real overtones, and every source is muffled and echoes more the further away it is, as it would outdoors between buildings ----------
+const sfx=(()=>{let A=null,on=false,master,wet,noise,pink,brown,gen,cut,dmp,beep,exc,elec,gas,wind,lastStep=0,nextHit=0,scraped=false,gustT=0,loadT=0,cutting=false;
+  const N={radio:6,bird:3,crane:9,shovel:4,arc:0,lighter:5,horn:25,clatter:14,hammer:2};
+  const btn=document.getElementById("sndBtn"),R=(a,b)=>a+Math.random()*(b-a),srcs=[];
+  function osc(type,f){const o=A.createOscillator();o.type=type;o.frequency.value=f;o.start();return o;}
+  function filt(type,f,q=1,g){const b=A.createBiquadFilter();b.type=type;b.frequency.value=f;b.Q.value=q;if(g!=null)b.gain.value=g;return b;}
+  function amp(v=0){const g=A.createGain();g.gain.value=v;return g;}
+  function loop(buf){const n=A.createBufferSource();n.buffer=buf;n.loop=true;n.start(0,Math.random()*buf.duration);return n;}
+  function chain(...n){for(let i=0;i<n.length-1;i++)n[i].connect(n[i+1]);return n[n.length-1];}
+  function place(p,x,y,z){if(p.positionX){p.positionX.value=x;p.positionY.value=y;p.positionZ.value=z;}else p.setPosition(x,y,z);}
+  function buf(sec,fill){const b=A.createBuffer(1,A.sampleRate*sec,A.sampleRate);fill(b.getChannelData(0));return b;}
+  // outdoor echo: slap-backs off the site office and villas, then a short diffuse tail
+  function ir(){const len=Math.floor(A.sampleRate*1.8),b=A.createBuffer(2,len,A.sampleRate);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);let lp=0;
+    for(let i=0;i<len;i++){const t=i/A.sampleRate;lp+=0.3*((Math.random()*2-1)-lp);d[i]=lp*Math.exp(-t*4.5)*Math.min(1,t/0.015)*0.5;}
+    [0.029,0.044,0.067,0.091,0.124,0.168,0.23].forEach((t,k)=>{const i=Math.floor((t+ch*0.005+Math.random()*0.006)*A.sampleRate);d[i]+=(0.75-k*0.09)*(Math.random()<0.5?-1:1);});}return b;}
+  // a sound source in the scene: distance lowpass (air) -> HRTF panner -> dry, plus an echo send that grows with distance
+  function spot(x,y,z,ref=8,keep=true){const air=filt("lowpass",16000,0.5),p=A.createPanner(),send=amp(0.15);p.panningModel="HRTF";p.distanceModel="inverse";p.refDistance=ref;p.rolloffFactor=1.1;
+    place(p,x,y,z);chain(air,p,master);p.connect(send);send.connect(wet);const o={in:air,p,send,x,y,z};aim(o);if(keep)srcs.push(o);else setTimeout(()=>p.disconnect(),6000);return o;}
+  function aim(o){const c=camera.position,d=Math.hypot(c.x-o.x,c.y-o.y,c.z-o.z),now=A.currentTime;
+    o.in.frequency.setTargetAtTime(Math.max(900,Math.min(18000,22000/(1+d/10))),now,0.1);o.send.gain.setTargetAtTime(Math.min(0.55,0.06+d/80),now,0.1);}
+  function move(o,x,y,z){o.x=x;o.y=y;o.z=z;place(o.p,x,y,z);}
+  // diesel or petrol engine: one crank cycle per period, firing harmonics stressed, combustion noise chuffing at the firing rate
+  function engine(rpm,cyl,bright,noiseF=900,nz=0.25){const out=amp(1),cyc=rpm/120,H=160,re=new Float32Array(H),im=new Float32Array(H);
+    for(let n=1;n<H;n++){const a=(0.5+Math.random()*0.5)/Math.pow(n,bright)*(n%cyl===0?2.4:0.6),ph=Math.random()*6.283;re[n]=a*Math.cos(ph);im[n]=a*Math.sin(ph);}
+    const t=A.createOscillator();t.setPeriodicWave(A.createPeriodicWave(re,im));t.frequency.value=cyc;t.start();
+    const jit=osc("sine",R(2.5,4.5)),jd=amp(10);chain(jit,jd,t.detune);const tg=amp(0.7);t.connect(tg);
+    const bp=filt("bandpass",noiseF,0.8),ng=amp(nz),pulse=osc("sawtooth",cyc*cyl),pd=amp(nz*0.9);chain(loop(noise),bp,ng);chain(pulse,pd,ng.gain);
+    const lp=filt("lowpass",cyc*cyl*14,0.7);tg.connect(lp);ng.connect(lp);lp.connect(out);
+    out.set=(r,now,tc=0.25)=>{const c=r/120;t.frequency.setTargetAtTime(c,now,tc);pulse.frequency.setTargetAtTime(c*cyl,now,tc);lp.frequency.setTargetAtTime(c*cyl*14,now,tc);};return out;}
+  function init(){A=new (window.AudioContext||window.webkitAudioContext)();
+    const comp=A.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=3;master=amp(0.85);chain(master,comp,A.destination);
+    const conv=A.createConvolver();conv.buffer=ir();wet=amp(1);chain(wet,conv,amp(0.55),comp);
+    noise=buf(3,d=>{for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;});
+    pink=buf(4,d=>{let b0=0,b1=0,b2=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;b0=0.997*b0+w*0.029;b1=0.985*b1+w*0.032;b2=0.95*b2+w*0.048;d[i]=(b0+b1+b2+w*0.02)*1.6;}});
+    brown=buf(4,d=>{let l=0;for(let i=0;i<d.length;i++){l=(l+0.02*(Math.random()*2-1))/1.02;d[i]=l*3.5;}});
+    // wind in gusts, a whistle through the mesh fence, and the low hum of the city
+    wind=amp(0.05);wind.bp=filt("bandpass",500,0.6);chain(loop(pink),wind.bp,wind,master);wind.connect(wet);
+    wind.wh=amp(0);chain(loop(noise),filt("bandpass",1750,14),wind.wh,master);
+    chain(loop(brown),filt("lowpass",180,0.7),amp(0.06),master);
+    // generator: 4-cylinder diesel genset at 1500 rpm with its cooling fan
+    gen=amp(0);const gs=spot(18.3,0.8,-12.7,7);engine(1500,4,0.85,1100,0.3).connect(gen);chain(loop(pink),filt("bandpass",650,0.7),amp(0.35),gen);gen.connect(gs.in);
+    // hot work: abrasive cut-off disc, free-running whine, then the load as it bites, plus sparks crackling
+    cut=amp(0);const cs=spot(-17.6,1.2,-8.0,6);cut.w1=osc("sawtooth",3150);cut.w2=osc("sawtooth",6300);
+    chain(cut.w1,filt("bandpass",3150,5),amp(0.5),cut);chain(cut.w2,filt("bandpass",6300,5),amp(0.18),cut);
+    cut.hiss=amp(0.12);chain(loop(noise),filt("bandpass",4600,0.5),cut.hiss,cut);cut.crk=amp(0);chain(loop(noise),filt("highpass",2400,0.7),cut.crk,cs.in);cut.connect(cs.in);
+    // dumper: 3-cylinder diesel ticking over, with a real-style reversing alarm (1.1 kHz square, about one beep a second)
+    dmp=spot(dump.position.x,1,dump.position.z,6);const de=engine(850,3,0.95,800,0.3);chain(de,amp(0.35),dmp.in);
+    beep=amp(0);chain(osc("square",1120),filt("bandpass",1120,2.5),beep,dmp.in);
+    // excavator: 6-cylinder diesel that revs with each dig, and the hydraulic pump whining with the load
+    exc=spot(-6.3,1.2,5.6,7);exc.e=engine(1150,6,0.85,1000,0.28);chain(exc.e,amp(0.45),exc.in);
+    exc.hy=amp(0);exc.pump=osc("sawtooth",420);chain(exc.pump,filt("bandpass",420,9),exc.hy,exc.in);
+    // concrete mixer: engine plus the drum churning wet concrete
+    const ms=spot(11.6,1.5,11.8,6);chain(engine(1300,4,0.9,900,0.25),amp(0.3),ms.in);
+    const ch=amp(0.18),clfo=osc("sine",0.5),cd=amp(0.14);chain(clfo,cd,ch.gain);chain(loop(pink),filt("bandpass",320,0.8),ch,ms.in);
+    // overloaded leads: 100 Hz mains hum with harmonics
+    elec=amp(0);const es=spot(10.8,0.9,-7.3,4);chain(osc("sawtooth",100),filt("lowpass",700,1),elec);chain(osc("sine",50),amp(0.6),elec);elec.connect(es.in);
+    // gas cylinders: hiss from the valve, fluttering
+    gas=amp(0);const gss=spot(17.4,1.0,2.7,4);chain(loop(noise),filt("highpass",5200,0.7),filt("peaking",8200,2,6),gas,gss.in);
+    // passing cars: tyre roar on asphalt plus a petrol engine, both pitched by the Doppler shift
+    cars.forEach(c=>{c.s=spot(c.m.position.x,0.6,c.m.position.z,6);c.g=amp(0);c.g.connect(c.s.in);c.tyre=loop(pink);chain(c.tyre,filt("bandpass",850,0.5),amp(0.9),c.g);
+      c.e=engine(R(2200,2900),4,1.05,1400,0.2);chain(c.e,amp(0.35),c.g);c.rpm=R(2200,2900);});}
+  function listen(){const l=A.listener,p=camera.position,f=new THREE.Vector3();camera.getWorldDirection(f);const u=camera.up;
+    if(l.positionX){l.positionX.value=p.x;l.positionY.value=p.y;l.positionZ.value=p.z;l.forwardX.value=f.x;l.forwardY.value=f.y;l.forwardZ.value=f.z;l.upX.value=u.x;l.upY.value=u.y;l.upZ.value=u.z;}
+    else{l.setPosition(p.x,p.y,p.z);l.setOrientation(f.x,f.y,f.z,u.x,u.y,u.z);}}
+  // one-shot building blocks
+  function shot(x,y,z,ref=6){const s=spot(x,y,z,ref,false),g=amp(1);g.connect(s.in);return g;}
+  function burst(g,type,f,q,t0,len,v){const n=A.createBufferSource(),e=amp(0);n.buffer=noise;chain(n,filt(type,f,q),e,g);n.start(t0,Math.random()*2);n.stop(t0+len+0.05);
+    e.gain.setValueAtTime(v,t0);e.gain.exponentialRampToValueAtTime(0.001,t0+len);}
+  function tone(g,type,f0,f1,t0,len,v,att=0.005){const o=A.createOscillator(),e=amp(0);o.type=type;o.frequency.setValueAtTime(f0,t0);o.frequency.exponentialRampToValueAtTime(f1,t0+len);chain(o,e,g);
+    e.gain.setValueAtTime(0,t0);e.gain.linearRampToValueAtTime(v,t0+att);e.gain.exponentialRampToValueAtTime(0.001,t0+len);o.start(t0);o.stop(t0+len+0.05);}
+  function grains(g,t0,len,n,f,v){for(let i=0;i<n;i++)burst(g,"bandpass",f*R(0.7,1.4),1,t0+Math.random()*len,R(0.006,0.02),v*R(0.4,1));}
+  // struck steel: free-free bar overtones (1, 2.76, 5.40, 8.93) with the low modes ringing longest
+  function steel(g,t0,f,v){[1,2.76,5.4,8.93].forEach((m,i)=>tone(g,"sine",f*m,f*m*0.998,t0,1.1/(i+1),v/(i+1.3),0.002));burst(g,"highpass",3000,0.7,t0,0.015,v*0.9);}
+  function hammer(now){const metal=Math.random()<0.6,x=R(-12,16),z=R(-10,9),g=shot(x,1,z,5),k=1+Math.floor(R(0,4)),f=R(600,1300),gap=R(0.42,0.6);
+    for(let i=0;i<k;i++){const t0=now+i*gap*R(0.9,1.1);if(metal)steel(g,t0,f*R(0.98,1.02),0.45);else{burst(g,"lowpass",260,0.9,t0,0.09,0.9);burst(g,"bandpass",950,1.2,t0,0.05,0.35);}}}
+  function clatter(now){const g=shot(R(-10,10),0.3,R(-8,10),5),f=R(700,1100);let t0=now,gap=0.18,v=0.5;for(let i=0;i<8;i++){steel(g,t0,f*R(0.9,1.15),v);t0+=gap;gap*=0.72;v*=0.78;}}
+  function step(){const now=A.currentTime,g=shot(sabir.position.x,0.05,sabir.position.z,4);burst(g,"lowpass",170,0.8,now,0.07,0.5);grains(g,now+0.01,0.08,8,2600,0.16);}
+  function radio(now){const g=amp(1),tel=chain(g,filt("highpass",380,0.7),filt("lowpass",2900,0.7)),sh=A.createWaveShaper(),c=new Float32Array(256);
+    for(let i=0;i<256;i++){const x=i/127.5-1;c[i]=Math.tanh(x*3);}sh.curve=c;chain(tel,sh,amp(0.5),shot(-1,1.5,-11.5,5));
+    burst(g,"highpass",2200,0.7,now,0.1,0.3);let t0=now+0.12;const n=6+Math.floor(R(0,8)),pitch=R(105,150);
+    for(let i=0;i<n;i++){const len=R(0.09,0.24),o=A.createOscillator(),e=amp(0),f1=filt("bandpass",R(320,800),6),f2=filt("bandpass",R(950,2300),8);o.type="sawtooth";
+      o.frequency.setValueAtTime(pitch*R(0.92,1.12),t0);o.frequency.linearRampToValueAtTime(pitch*R(0.85,1.05),t0+len);o.connect(f1);o.connect(f2);f1.connect(e);f2.connect(e);e.connect(g);
+      e.gain.setValueAtTime(0,t0);e.gain.linearRampToValueAtTime(0.9,t0+0.025);e.gain.setValueAtTime(0.8,t0+len-0.03);e.gain.linearRampToValueAtTime(0,t0+len);o.start(t0);o.stop(t0+len+0.02);
+      burst(g,"bandpass",4000,1,t0,0.03,0.05);t0+=len+(Math.random()<0.2?R(0.15,0.3):R(0.02,0.06));}
+    burst(g,"highpass",2200,0.7,t0+0.04,0.2,0.3);}
+  function birds(now){const g=shot(R(-24,24),5,Math.random()<0.5?R(-16,-12):R(13,17),6),k=2+Math.floor(R(0,5));
+    for(let i=0;i<k;i++){const t0=now+i*R(0.09,0.18),f=R(3300,4200);tone(g,"sine",f,f*R(1.25,1.55),t0,R(0.04,0.07),0.1,0.004);if(Math.random()<0.4)tone(g,"sine",f*1.4,f*0.9,t0+0.05,0.05,0.07,0.004);}}
+  function winch(now){const g=shot(0,3,9.8,7),o=A.createOscillator(),e=amp(0);o.type="sawtooth";o.frequency.setValueAtTime(180,now);o.frequency.linearRampToValueAtTime(240,now+0.8);o.frequency.setValueAtTime(240,now+3);o.frequency.linearRampToValueAtTime(170,now+3.8);
+    chain(o,filt("bandpass",700,1.5),e,g);e.gain.setValueAtTime(0,now);e.gain.linearRampToValueAtTime(0.22,now+0.5);e.gain.setValueAtTime(0.22,now+3.2);e.gain.linearRampToValueAtTime(0,now+3.9);o.start(now);o.stop(now+4);
+    for(let i=0;i<10;i++)burst(g,"bandpass",R(2500,4500),3,now+0.5+i*R(0.25,0.35),0.03,0.12);}
+  function shovel(now){const g=shot(8,-0.5,5.4,4);burst(g,"bandpass",1700,0.7,now,0.32,0.35);grains(g,now,0.35,14,3000,0.14);burst(g,"lowpass",200,1,now+0.45,0.12,0.5);grains(g,now+0.45,0.25,18,2200,0.1);}
+  function arcs(now){const g=shot(10.8,0.9,-7.3,4),k=2+Math.floor(R(0,4));for(let i=0;i<k;i++){const t0=now+R(0,0.35);burst(g,"highpass",2500,0.8,t0,0.025,0.6);tone(g,"square",100,100,t0,0.08,0.12,0.001);}}
+  function lighter(now){const g=shot(3.9,1.2,3.0,3.5);grains(g,now,0.05,4,3200,0.4);burst(g,"highpass",5000,1,now+0.06,0.01,0.5);burst(g,"lowpass",600,0.7,now+0.08,0.6,0.18);}
+  function horn(now){const c=cars.find(c=>c.m.visible&&Math.abs(c.x)<25);if(!c)return;const g=amp(1);chain(g,filt("bandpass",900,0.9),c.s.in);const len=Math.random()<0.5?0.18:0.45;
+    [420,505].forEach(f=>tone(g,"square",f,f,now,len,0.25,0.01));if(len<0.2)[420,505].forEach(f=>tone(g,"square",f,f,now+0.28,0.18,0.25,0.01));}
+  function ding(){if(!on)return;const now=A.currentTime;[[880,0],[1318,0.13]].forEach(([f,d])=>tone(master,"triangle",f,f,now+d,0.6,0.16,0.02));}
+  function tick(t){if(!on)return;const now=A.currentTime;listen();srcs.forEach(aim);
+    if(now>gustT){wind.gain.setTargetAtTime(R(0.02,0.12),now,1.2);wind.bp.frequency.setTargetAtTime(R(250,900),now,1.5);wind.wh.gain.setTargetAtTime(Math.random()<0.4?R(0.005,0.02):0,now,1);gustT=now+R(1.5,4);}
+    gen.gain.setTargetAtTime(sm(1)==="haz"?0.5:0,now,0.4);
+    const hot=sm(0)==="haz";cut.gain.setTargetAtTime(hot?0.12:0,now,0.3);
+    if(now>loadT){cutting=!cutting;loadT=now+(cutting?R(1.6,3.2):R(0.8,2.2));const f=cutting?R(2650,2850):3150;
+      cut.w1.frequency.setTargetAtTime(f,now,cutting?0.15:0.4);cut.w2.frequency.setTargetAtTime(f*2,now,cutting?0.15:0.4);cut.hiss.gain.setTargetAtTime(cutting?0.55:0.1,now,0.1);}
+    cut.crk.gain.setTargetAtTime(hot&&cutting?Math.random()*Math.random()*0.35:0,now,0.008);
+    move(dmp,dump.position.x,1,dump.position.z);beep.gain.setTargetAtTime((now%16)<5&&(now%1)<0.5?0.3:0,now,0.006);
+    const ph=t*0.7,spd=Math.abs(Math.cos(ph));exc.e.set(1150+650*spd,now);exc.pump.frequency.setTargetAtTime(380+160*spd,now,0.2);exc.hy.gain.setTargetAtTime(0.1*spd,now,0.15);
+    if(Math.sin(ph)<-0.96&&!scraped){scraped=true;const g=shot(-9.2,0.3,5.6,6);burst(g,"bandpass",700,0.7,now,0.6,0.5);grains(g,now,0.6,30,2400,0.18);burst(g,"lowpass",150,1,now+0.55,0.15,0.6);}
+    else if(Math.sin(ph)>0)scraped=false;
+    elec.gain.setTargetAtTime(sm(4)==="haz"?0.07:0,now,0.3);gas.gain.setTargetAtTime(sm(3)==="haz"?0.05*R(0.7,1.2):0,now,0.08);
+    const lp=camera.position;cars.forEach(c=>{c.g.gain.setTargetAtTime(c.m.visible?0.5:0,now,0.15);move(c.s,c.m.position.x,0.6,c.m.position.z);
+      const dx=lp.x-c.m.position.x,dz=lp.z-c.m.position.z,dy=lp.y,d=Math.hypot(dx,dy,dz)||1,shift=343/(343-c.dir*c.v*dx/d);
+      c.e.set(c.rpm*shift,now,0.05);c.tyre.playbackRate.setTargetAtTime(shift,now,0.05);});
+    if(now>N.hammer){hammer(now);N.hammer=now+R(2,5.5);}
+    if(now>N.clatter){clatter(now);N.clatter=now+R(18,35);}
+    if(now>N.radio){radio(now);N.radio=now+R(14,28);}
+    if(now>N.bird){birds(now);N.bird=now+R(5,13);}
+    if(now>N.crane){winch(now);N.crane=now+R(14,24);}
+    if(now>N.shovel){shovel(now);N.shovel=now+R(2.2,4.5);}
+    if(now>N.arc){if(sm(4)==="haz")arcs(now);N.arc=now+R(1.5,4);}
+    if(now>N.lighter){if(sm(5)==="haz")lighter(now);N.lighter=now+R(8,15);}
+    if(now>N.horn){horn(now);N.horn=now+R(25,50);}
+    if(insp&&insp.phase==="walk"&&insp.path.length){const s=Math.floor(walkPh/Math.PI);if(s!==lastStep){lastStep=s;step();}}}
+  function set(v){on=v;if(on){if(!A)init();A.resume();}else if(A)A.suspend();btn.setAttribute("aria-pressed",on);btn.textContent=on?"Sound on":"Sound off";}
+  btn.onclick=()=>set(!on);
+  document.addEventListener("visibilitychange",()=>{if(A&&on)document.hidden?A.suspend():A.resume();});
+  return {tick,ding};})();
 (function loop(){
   requestAnimationFrame(loop);
   const k=reduce?1:0.08, t=performance.now()/1000; const dt=Math.min(0.05,t-(loop.t||t)); loop.t=t;
-  inspStep(dt);
+  inspStep(dt); if(!reduce)trafficStep(dt); sfx.tick(t);
   tween.forEach(q=>{const to=q[sm(q.s)];q.o.position.x+=(to[0]-q.o.position.x)*k;q.o.position.z+=(to[1]-q.o.position.z)*k;if(to[2]!=null){let a=to[2]-q.o.rotation.y;a=Math.atan2(Math.sin(a),Math.cos(a));q.o.rotation.y+=a*k;}});
   if(camGoal){controls.target.lerp(camGoal.t,k);camera.position.lerp(camGoal.c,k);if(camera.position.distanceTo(camGoal.c)<0.05)camGoal=null;}
   if(!reduce){
     fireAnim(t);
     flagMeshes.forEach((m,i)=>{m.rotation.y=Math.sin(t*1.6+i)*0.25;});
     sabir.userData.head.rotation.y=Math.sin(t*0.4)*0.35;
+    house.rotation.y=Math.sin(t*0.35)*0.5; bp.rotation.z=0.55+Math.sin(t*0.7)*0.12; sp.rotation.z=-1.7+Math.sin(t*0.7+0.8)*0.18;
     dump.userData.beacon.material.emissive=new THREE.Color(Math.sin(t*8)>0?0xFF8F00:0x000000);
   }
   controls.update(); renderer.render(scene,camera);
