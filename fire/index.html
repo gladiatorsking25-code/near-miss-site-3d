@@ -901,6 +901,7 @@ function select(i){
   chips.forEach((c,k)=>{c.setAttribute("aria-current",k===i);c.classList.toggle("seen",seen.has(k));});
   dots.forEach((d,k)=>d.classList.toggle("on",seen.has(k))); document.getElementById("seenN").textContent=seen.size;
   if(i===7)sndHorn();
+  if(i===6)sndBell();
   const s=S[i]; fly([s.pos[0],0.5,s.pos[2]],[s.pos[0]+s.cam[0],s.cam[1],s.pos[2]+s.cam[2]]);
   render();
 }
@@ -956,7 +957,7 @@ function inspArrive(){const i=insp.i,s=S[i],f=ROUTE[i].face;insp.phase="found";f
   pins.forEach((p,k)=>p.classList.toggle("seen",seen.has(k)));chips.forEach((c,k)=>c.classList.toggle("seen",seen.has(k)));
   const mx=(sabir.position.x+s.pos[0])/2,mz=(sabir.position.z+s.pos[2])/2;fly([mx,0.8,mz],[mx+s.cam[0]*0.95,s.cam[1]*0.95,mz+s.cam[2]*0.95]);renderInsp();}
 function inspNextBtn(){if(insp.phase==="walk"){const q=insp.path[insp.path.length-1];if(q){sabir.position.set(q[0],0,q[1]);insp.path=[];inspArrive();}return;}
-  if(insp.phase==="found"){insp.fixed.add(insp.i);insp.phase="fixed";applyMode();return;}
+  if(insp.phase==="found"){insp.fixed.add(insp.i);sndHiss();insp.phase="fixed";applyMode();return;}
   if(insp.phase==="fixed"){if(insp.i<S.length-1)inspGo(insp.i+1);else{insp.phase="done";fly([0,0,0],[-24,28,32]);renderInsp();}return;}
   inspEnd(true);}
 function inspEnd(goHome){insp=null;faceTo=null;sabir.position.set(SB_HOME[0],0,SB_HOME[1]);sabir.rotation.y=SB_HOME[2];
@@ -1053,11 +1054,29 @@ function sndInit(){
   const clank=C.createGain();clank.connect(master);
   SND.src.push({pos:new THREE.Vector3(2,1,9),g:clank,maxv:0.22,active:()=>true});
   (function hit(){if(!SND.ctx)return;const t=C.currentTime;[1,2.76,5.4].forEach((m,i)=>{const o=C.createOscillator(),e=C.createGain();o.frequency.value=420*m;o.type="sine";e.gain.setValueAtTime(0.5/(i+1),t);e.gain.exponentialRampToValueAtTime(0.001,t+0.35);o.connect(e);e.connect(clank);o.start(t);o.stop(t+0.4);});setTimeout(hit,(Math.random()<0.5?450:1800)+Math.random()*2500);})();
+
+  // crane slew/hoist motor: swells while lifting
+  src([0,4,9.8],0.22,g=>{const o=C.createOscillator();o.type="sawtooth";o.frequency.value=72;const f=C.createBiquadFilter();f.type="lowpass";f.frequency.value=500;const sw=C.createGain();sw.gain.value=0.2;o.connect(f);f.connect(sw);sw.connect(g);o.start();
+    (function lift(){if(!SND.ctx)return;const t=C.currentTime;sw.gain.setTargetAtTime(1,t,0.8);o.frequency.setTargetAtTime(96,t,1.2);sw.gain.setTargetAtTime(0.15,t+6,0.8);o.frequency.setTargetAtTime(72,t+6,1);setTimeout(lift,11000+Math.random()*8000);})();});
+  // concrete mixer drum rumble
+  src([11.6,1.5,11.8],0.2,g=>{const n=noise(),f=C.createBiquadFilter();f.type="lowpass";f.frequency.value=140;const am=C.createGain();am.gain.value=0.7;const lfo=C.createOscillator();lfo.frequency.value=0.9;const lg=C.createGain();lg.gain.value=0.3;lfo.connect(lg);lg.connect(am.gain);lfo.start();n.connect(f);f.connect(am);am.connect(g);});
+  // two-way radio chatter at the site office
+  const radio=C.createGain();radio.connect(master);SND.src.push({pos:new THREE.Vector3(3,1.2,-9.5),g:radio,maxv:0.16,active:()=>true});
+  (function talk(){if(!SND.ctx)return;let t=C.currentTime;const sq=(at)=>{const n=C.createBufferSource();n.buffer=noiseBuf;const e=C.createGain();e.gain.setValueAtTime(0.25,at);e.gain.linearRampToValueAtTime(0,at+0.08);n.connect(e);e.connect(radio);n.start(at);n.stop(at+0.1);};
+    sq(t);for(let i=0,k=3+Math.floor(Math.random()*5);i<k;i++){const d=0.12+Math.random()*0.25,o=C.createOscillator(),bf=C.createBiquadFilter(),e=C.createGain();o.type="sawtooth";o.frequency.value=120+Math.random()*90;bf.type="bandpass";bf.frequency.value=1300;bf.Q.value=1.5;e.gain.setValueAtTime(0,t+0.1);e.gain.linearRampToValueAtTime(0.5,t+0.13);e.gain.linearRampToValueAtTime(0,t+0.1+d);o.connect(bf);bf.connect(e);e.connect(radio);o.start(t+0.1);o.stop(t+0.15+d);t+=d+0.06;}
+    sq(t+0.15);setTimeout(talk,9000+Math.random()*14000);})();
+  // windsock creak / flag flap near the assembly area
+  src([-21,4,-1],0.08,g=>{const n=noise(),f=C.createBiquadFilter();f.type="bandpass";f.frequency.value=900;f.Q.value=0.6;const am=C.createGain();am.gain.value=0.4;const lfo=C.createOscillator();lfo.frequency.value=3.2;const lg=C.createGain();lg.gain.value=0.35;lfo.connect(lg);lg.connect(am.gain);lfo.start();n.connect(f);f.connect(am);am.connect(g);});
   // dumper reversing beeper
   const beep=C.createGain();beep.connect(master);
   SND.src.push({pos:new THREE.Vector3(12.6,1,6.6),g:beep,maxv:0.12,active:()=>true});
   (function bp(){if(!SND.ctx)return;const t=C.currentTime;for(let i=0;i<6;i++){const o=C.createOscillator(),e=C.createGain();o.frequency.value=1050;o.type="square";e.gain.setValueAtTime(0,t+i*0.9);e.gain.linearRampToValueAtTime(0.3,t+i*0.9+0.01);e.gain.setValueAtTime(0.3,t+i*0.9+0.45);e.gain.linearRampToValueAtTime(0,t+i*0.9+0.47);o.connect(e);e.connect(beep);o.start(t+i*0.9);o.stop(t+i*0.9+0.5);}setTimeout(bp,14000+Math.random()*12000);})();
 }
+
+// fire alarm bell: rung when the fire point hazard is opened
+function sndBell(){if(!SND.on)return;const C=SND.ctx,t=C.currentTime;for(let i=0;i<40;i++){const o=C.createOscillator(),e=C.createGain();o.type="triangle";o.frequency.value=1250;e.gain.setValueAtTime(0.14,t+i*0.07);e.gain.exponentialRampToValueAtTime(0.001,t+i*0.07+0.065);o.connect(e);e.connect(SND.master);o.start(t+i*0.07);o.stop(t+i*0.07+0.07);}}
+// extinguisher discharge hiss: plays when a hazard is corrected on the inspection walk
+function sndHiss(){if(!SND.on)return;const C=SND.ctx,t=C.currentTime,b=C.createBuffer(1,C.sampleRate*1.4,C.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const n=C.createBufferSource();n.buffer=b;const f=C.createBiquadFilter();f.type="highpass";f.frequency.value=1800;const e=C.createGain();e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(0.18,t+0.08);e.gain.setValueAtTime(0.18,t+0.9);e.gain.linearRampToValueAtTime(0,t+1.3);n.connect(f);f.connect(e);e.connect(SND.master);n.start(t);}
 // air horn alarm: three long blasts (used when the assembly-point hazard is opened)
 function sndHorn(){if(!SND.on)return;const C=SND.ctx,t=C.currentTime;for(let i=0;i<3;i++){[311,415].forEach(fq=>{const o=C.createOscillator(),e=C.createGain();o.type="sawtooth";o.frequency.value=fq;e.gain.setValueAtTime(0,t+i*1.4);e.gain.linearRampToValueAtTime(0.12,t+i*1.4+0.05);e.gain.setValueAtTime(0.12,t+i*1.4+1.0);e.gain.linearRampToValueAtTime(0,t+i*1.4+1.1);o.connect(e);e.connect(SND.master);o.start(t+i*1.4);o.stop(t+i*1.4+1.2);});}}
 function sndUpdate(){
@@ -1071,6 +1090,11 @@ function sndToggle(){
 }
 document.getElementById("sndBtn").onclick=sndToggle;
 
+
+// windsock on a mast by the assembly area (shows wind direction for evacuation)
+const sock=(()=>{const g=grp(-21,0,-1);cyl(0.06,0.08,6,0xDADFE3,0,3,0,g,8);const s=grp(0,5.8,0,g);for(let i=0;i<5;i++){const c=cyl(0.34-i*0.05,0.3-i*0.05,0.42,i%2?0xffffff:0xE8772E,0,0,0,s,12);c.rotation.z=Math.PI/2;c.position.x=0.25+i*0.42;}return s;})();
+// manual call point and alarm bell on a post at the fire point
+(()=>{const g=grp(-19.6,0,8.6);cyl(0.05,0.05,2.2,0x9aa3ab,0,1.1,0,g,8);box(0.3,0.3,0.1,0xC8102E,0,1.4,0.07,g);box(0.2,0.2,0.02,0xffffff,0,1.4,0.13,g);const b=cyl(0.2,0.2,0.08,0xC8102E,0,2.0,0.08,g,16);b.rotation.x=Math.PI/2;})();
 (function loop(){
   requestAnimationFrame(loop);
   const k=reduce?1:0.08, t=performance.now()/1000; const dt=Math.min(0.05,t-(loop.t||t)); loop.t=t;
@@ -1083,7 +1107,7 @@ document.getElementById("sndBtn").onclick=sndToggle;
     sabir.userData.head.rotation.y=Math.sin(t*0.4)*0.35;
     dump.userData.beacon.material.emissive=new THREE.Color(Math.sin(t*8)>0?0xFF8F00:0x000000);
   }
-  sndUpdate(); controls.update(); renderer.render(scene,camera);
+  sndUpdate(); if(typeof sock!=='undefined')sock.rotation.y=Math.sin(performance.now()/2600)*0.5;controls.update(); renderer.render(scene,camera);
   if(!loop.shown){loop.shown=1;const l=document.getElementById("loader");l.style.opacity=0;setTimeout(()=>l.remove(),450);}
   const r=stage.getBoundingClientRect();
   S.forEach((s,i)=>{v.set(...s.pos).project(camera);const p=pins[i];p.style.display=v.z<1?"grid":"none";p.style.left=((v.x+1)/2*r.width)+"px";p.style.top=((1-v.y)/2*r.height)+"px";});
